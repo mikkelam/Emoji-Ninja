@@ -13,6 +13,7 @@ A performant macOS emoji picker. No fuss, just find emojis. Fast.
 - **Smart pop**: The window pops next to your cursor if you prefer to use your mouse 🖱️
 - **Skin Tone Support**: Choose from different skin tones 🌈
 - **Global Hotkey**: Quick access with `⌘⌃Space` 🔥🔑
+- **100% Offline**
 
 Free and open source. Forever.
 ## Installation
