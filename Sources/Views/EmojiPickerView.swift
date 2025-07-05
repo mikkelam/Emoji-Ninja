@@ -55,7 +55,9 @@ struct EmojiPickerView: View {
         }
         .frame(width: windowSize.width, height: windowSize.height)
         .onAppear {
-            isSearchFocused = true
+            DispatchQueue.main.async {
+                isSearchFocused = true
+            }
             selectedEmojiIndex = 0
             searchText = ""
         }
@@ -73,7 +75,9 @@ struct EmojiPickerView: View {
             _ in
             searchText = ""
             selectedEmojiIndex = 0
-            isSearchFocused = true
+            DispatchQueue.main.async {
+                isSearchFocused = true
+            }
         }
     }
 
@@ -89,7 +93,7 @@ struct EmojiPickerView: View {
                 TextField("Search emojis...", text: $searchText)
                     .textFieldStyle(.plain)
                     .focused($isSearchFocused)
-                    .font(.system(size: 18))
+                    .font(.system(size: 24))
                     .onKeyPress { keyPress in
                         // Handle arrow keys for navigation, let other keys through for typing
                         if keyPress.key == .upArrow || keyPress.key == .downArrow
@@ -98,6 +102,9 @@ struct EmojiPickerView: View {
                             return handleKeyPress(keyPress)
                         } else if keyPress.key == .return {
                             selectCurrentEmoji()
+                            return .handled
+                        } else if keyPress.key == .escape {
+                            emojiManager.hidePicker()
                             return .handled
                         }
                         return .ignored
@@ -134,7 +141,7 @@ struct EmojiPickerView: View {
                 } label: {
                     Text(emojiManager.selectedSkinTone.emoji)
                         .font(.system(size: 20))
-                        .frame(width: 50, height: 50)
+                        .frame(width: 45, height: 45)
                         .background(Color.secondary.opacity(0.1))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
@@ -142,7 +149,7 @@ struct EmojiPickerView: View {
                 .padding(.trailing, 16)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 80)
+            .frame(height: 60)
             .background(Color.secondary.opacity(0.1))
         }
         // .padding(.horizontal, 4)

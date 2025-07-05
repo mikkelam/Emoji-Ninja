@@ -23,6 +23,11 @@ class EmojiManager: ObservableObject {
 
         guard let window = pickerWindow else { return }
 
+        if window.isVisible {
+            hidePicker()
+            return
+        }
+
         positionWindowAtCursor(window)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
