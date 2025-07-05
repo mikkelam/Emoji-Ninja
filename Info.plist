@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Emoji Ninja</string>
 	<key>CFBundleIconFile</key>
-	<string>AppIcon</string>
+	<string>ninja</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.mikkelam.emoji-ninja</string>
 	<key>CFBundleInfoDictionaryVersion</key>
