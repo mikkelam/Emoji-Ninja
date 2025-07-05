@@ -38,7 +38,8 @@ let package = Package(
                 "equiplib",
                 "HotKey",
             ],
-            path: "Sources/equipapp"
+            path: "Sources/equipapp",
+            exclude: ["Views/Styling/README.md"]
         ),
         .testTarget(
             name: "E-quipTests",

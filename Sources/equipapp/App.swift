@@ -7,6 +7,7 @@ import equiplib
 struct EQuipApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var emojiManager = EmojiManager()
+    @StateObject private var themeManager = ThemeManager.shared
 
     init() {
         // Log emoji data stats on startup
@@ -42,6 +43,7 @@ struct EQuipApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuBarView(appState: appState, emojiManager: emojiManager)
+                .themedEnvironment(themeManager)
         } label: {
             Image(nsImage: menuBarImage)
         }

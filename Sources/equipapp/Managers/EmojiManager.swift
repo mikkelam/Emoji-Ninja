@@ -51,6 +51,7 @@ class EmojiManager: ObservableObject {
             },
             emojiManager: self
         )
+        .themedEnvironment(ThemeManager.shared)
 
         pickerWindow = NSWindow(
             contentRect: NSRect(origin: .zero, size: windowSize),

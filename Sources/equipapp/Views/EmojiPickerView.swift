@@ -5,6 +5,7 @@ struct EmojiPickerView: View {
     let windowSize: CGSize
     let onEmojiSelected: (String) -> Void
     @ObservedObject var emojiManager: EmojiManager
+    @Environment(\.theme) private var theme
 
     @State private var searchText = ""
     @State private var selectedCategory: EmojiCategory?
@@ -14,7 +15,9 @@ struct EmojiPickerView: View {
     @State private var searchResultsId = UUID()
 
     private var adaptiveColumns: [GridItem] {
-        Array(repeating: GridItem(.adaptive(minimum: 60, maximum: 120), spacing: 8), count: 8)
+        Array(
+            repeating: GridItem(.adaptive(minimum: 60, maximum: 120), spacing: theme.spacing.small),
+            count: 8)
     }
 
     var body: some View {
@@ -42,8 +45,8 @@ struct EmojiPickerView: View {
                                 searchResultsView(geometry: geometry)
                             }
                         }
-                        .padding(.horizontal)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, theme.spacing.medium)
+                        .padding(.vertical, theme.spacing.xs)
                     }
                     .onChange(of: selectedEmojiIndex) { _, newIndex in
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -53,7 +56,7 @@ struct EmojiPickerView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(red: 35 / 255, green: 35 / 255, blue: 35 / 255))
+            .background(theme.colors.background)
         }
         .frame(width: windowSize.width, height: windowSize.height)
         .onAppear {
@@ -94,13 +97,13 @@ struct EmojiPickerView: View {
             // Search field fills entire width
             HStack {
                 Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                    .padding(.leading, 16)
+                    .iconStyle(color: .secondary, size: .medium)
+                    .padding(.leading, theme.spacing.medium)
 
                 TextField("Search emojis...", text: $searchText)
                     .textFieldStyle(.plain)
                     .focused($isSearchFocused)
-                    .font(.system(size: 24))
+                    .font(theme.typography.title)
                     .onKeyPress { keyPress in
                         // Handle arrow keys for navigation, let other keys through for typing
                         if keyPress.key == .upArrow || keyPress.key == .downArrow
@@ -124,7 +127,7 @@ struct EmojiPickerView: View {
                 if !searchText.isEmpty {
                     Button(action: { searchText = "" }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
+                            .iconStyle(color: .secondary, size: .medium)
                     }
                     .buttonStyle(.plain)
                 }
@@ -137,34 +140,29 @@ struct EmojiPickerView: View {
                         }) {
                             HStack {
                                 Text(tone.emoji)
-                                    .font(.system(size: 18))
+                                    .font(.system(size: 20))
                                 Text(tone.name)
                                     .font(.system(size: 14))
                             }
                             .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .padding(.vertical, 8)
                         }
                     }
                 } label: {
                     Text(emojiManager.selectedSkinTone.emoji)
-                        .font(.system(size: 20))
-                        .frame(width: 45, height: 45)
-                        .background(Color.secondary.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .skinToneSelectorStyle()
                 }
                 .buttonStyle(.plain)
-                .padding(.trailing, 16)
+                .padding(.trailing, theme.spacing.medium)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 60)
-            .background(Color.secondary.opacity(0.1))
+            .searchBarStyle(isFocused: isSearchFocused)
         }
     }
 
     // MARK: - Category Filter
     private var categoryFilterView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: theme.spacing.small) {
                 // All categories button
                 CategoryPill(
                     title: "All",
@@ -181,16 +179,16 @@ struct EmojiPickerView: View {
                     )
                 }
             }
-            .padding(.horizontal)
+            .padding(.horizontal, theme.spacing.medium)
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, theme.spacing.small)
     }
 
     // MARK: - Category Browsing
     private func categoryBrowsingView(geometry: GeometryProxy) -> some View {
         ForEach(emojiDataWithIndices, id: \.category.rawValue) { categoryData in
             Section {
-                LazyVGrid(columns: adaptiveColumns, spacing: 8) {
+                LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
                     ForEach(categoryData.emojiIndices, id: \.emoji.unicode) { emojiData in
                         EmojiButton(
                             emoji: emojiData.emoji.unicode,
@@ -205,14 +203,15 @@ struct EmojiPickerView: View {
             } header: {
                 HStack {
                     Text(categoryData.category.name)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                        .font(theme.typography.headline)
+                        .foregroundColor(theme.colors.text.primary)
                     Spacer()
                 }
                 .padding(.bottom, 2)
                 .padding(
                     .top,
-                    categoryData.category == EmojiCategory.availableCategories.first ? 0 : 12)
+                    categoryData.category == EmojiCategory.availableCategories.first
+                        ? 0 : theme.spacing.medium)
             }
         }
     }
@@ -221,23 +220,21 @@ struct EmojiPickerView: View {
     private func searchResultsView(geometry: GeometryProxy) -> some View {
         Group {
             if currentSearchResults.isEmpty {
-                VStack(spacing: 12) {
+                VStack(spacing: theme.spacing.medium) {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 48))
-                        .foregroundColor(.secondary)
+                        .iconStyle(color: .secondary, size: .extraLarge)
 
                     Text("No emojis found")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                        .font(theme.typography.headline)
+                        .foregroundColor(theme.colors.text.secondary)
 
                     Text("Try searching for something else")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(theme.typography.subheadline)
+                        .foregroundColor(theme.colors.text.secondary)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding()
+                .emptyStateStyle()
             } else {
-                LazyVGrid(columns: adaptiveColumns, spacing: 8) {
+                LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
                     ForEach(Array(currentSearchResults.enumerated()), id: \.element.unicode) {
                         index, emoji in
                         EmojiButton(
@@ -359,16 +356,8 @@ struct CategoryPill: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.subheadline)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(isSelected ? Color.accentColor : Color.secondary.opacity(0.2))
-                )
-                .foregroundColor(isSelected ? .white : .primary)
         }
-        .buttonStyle(.plain)
+        .categoryPillStyle(isSelected: isSelected)
     }
 }
 
@@ -377,6 +366,7 @@ struct EmojiButton: View {
     let action: () -> Void
     let isSelected: Bool
     let geometry: GeometryProxy
+    @Environment(\.theme) private var theme
 
     init(
         emoji: String, isSelected: Bool = false, geometry: GeometryProxy,
@@ -391,26 +381,14 @@ struct EmojiButton: View {
     @State private var isHovered = false
 
     private var buttonSize: CGFloat {
-        let availableWidth = geometry.size.width - 32  // Account for padding
-        let spacing: CGFloat = 7 * 8  // 7 gaps between 8 columns
-        return max(80, min(140, (availableWidth - spacing) / 8))
+        return EmojiLayout.calculateButtonSize(for: geometry, theme: theme)
     }
 
     var body: some View {
         Button(action: action) {
             Text(emoji)
-                .font(.system(size: buttonSize * 0.7))
-                .frame(width: buttonSize, height: buttonSize)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(red: 45 / 255, green: 45 / 255, blue: 45 / 255))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(borderColor, lineWidth: 2)
-                )
         }
-        .buttonStyle(.plain)
+        .emojiButtonStyle(isSelected: isSelected, isHovered: isHovered, size: buttonSize)
         .onHover { hovering in
             isHovered = hovering
             if hovering {
@@ -419,19 +397,5 @@ struct EmojiButton: View {
                 NSCursor.pop()
             }
         }
-    }
-
-    private var borderColor: Color {
-        if isSelected {
-            return Color(red: 205 / 255, green: 205 / 255, blue: 205 / 255)
-        } else if isHovered {
-            return Color(red: 105 / 255, green: 105 / 255, blue: 105 / 255)
-        } else {
-            return Color.clear
-        }
-    }
-
-    private var backgroundColor: Color {
-        return Color(red: 35 / 255, green: 35 / 255, blue: 35 / 255)
     }
 }
