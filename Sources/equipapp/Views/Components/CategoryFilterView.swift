@@ -8,7 +8,7 @@ struct CategoryFilterView: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: theme.spacing.small) {
+            HStack(spacing: theme.spacing.medium) {
                 // All categories button
                 CategoryPill(
                     title: "All",
