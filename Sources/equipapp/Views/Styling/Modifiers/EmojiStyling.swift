@@ -105,6 +105,7 @@ struct SkinToneSelectorStyle: ViewModifier {
                             .stroke(theme.colors.border.primary, lineWidth: 1)
                     )
             )
+            .contentShape(Rectangle())
             .themedShadow(.small)
     }
 }

@@ -120,15 +120,15 @@ public enum EmojiGroup: Int, CaseIterable {
         case .animalsAndNature:
             return "🐱"
         case .foodAndDrink:
-            return "🍎"
+            return "🍆"
         case .activities:
-            return "⚽"
+            return "🎨"
         case .travelAndPlaces:
             return "🚗"
         case .objects:
-            return "💡"
+            return "👓️"
         case .symbols:
-            return "❤️"
+            return "☮️"
         case .flags:
             return "🏳️"
         }

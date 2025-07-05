@@ -63,7 +63,7 @@ class EmojiManager: ObservableObject {
             defer: false
         )
 
-        pickerWindow?.title = "E-quip Emoji Picker"
+        pickerWindow?.title = "E-quip"
         pickerWindow?.contentView = NSHostingView(rootView: contentView)
         pickerWindow?.level = .floating
         pickerWindow?.isReleasedWhenClosed = false

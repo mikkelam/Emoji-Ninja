@@ -76,6 +76,8 @@ struct SearchBar: View {
                 } label: {
                     Text(emojiManager.selectedSkinTone.emoji)
                         .font(theme.typography.emoji.medium)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .skinToneSelectorStyle()

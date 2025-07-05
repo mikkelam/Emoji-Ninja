@@ -23,8 +23,6 @@ class AppEmojiManager {
             emoji.isSupported
         }
 
-        let unsupportedCount = allUsefulEmojis.count - supportedEmojis.count
-
         // Group supported emojis
         supportedEmojisByGroup = Dictionary(grouping: supportedEmojis) { emoji in
             emoji.group ?? 0
