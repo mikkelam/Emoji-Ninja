@@ -8,12 +8,13 @@ A performant macOS emoji picker. No fuss, just find emojis. Fast.
 
 ## Features
 
-- **Fast Search**: Find your favorite emoji with ease
-- **Keyboard Navigation**: Arrow keys + Enter for selection
-- **Category Browsing**: Browse emojis by category
-- **Skin Tone Support**: Choose from different skin tones
-- **Global Hotkey**: Quick access with `⌘⌃Space`
+- **Fast Search**: Find your favorite emoji with ease 🔍️
+- **Keyboard Navigation**: Arrow keys + Enter for selection ⌨️
+- **Smart pop**: The window pops next to your cursor if you prefer to use your mouse 🖱️
+- **Skin Tone Support**: Choose from different skin tones 🌈
+- **Global Hotkey**: Quick access with `⌘⌃Space` 🔥🔑
 
+Free and open source. Forever.
 ## Installation
 
 ### Build from Source
