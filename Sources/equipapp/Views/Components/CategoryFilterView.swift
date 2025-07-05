@@ -2,7 +2,7 @@ import SwiftUI
 import equiplib
 
 struct CategoryFilterView: View {
-    @Binding var selectedCategory: EmojiCategory?
+    @Binding var selectedCategory: EmojiGroup?
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -16,7 +16,7 @@ struct CategoryFilterView: View {
                 )
 
                 // Individual category buttons
-                ForEach(EmojiCategory.availableCategories, id: \.self) { category in
+                ForEach(EmojiGroup.availableGroups, id: \.self) { category in
                     CategoryPill(
                         title: category.name,
                         isSelected: selectedCategory == category,

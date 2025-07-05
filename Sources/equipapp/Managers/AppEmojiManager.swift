@@ -23,12 +23,15 @@ class AppEmojiManager {
             emoji.isSupported
         }
 
-        print("✅ \(supportedEmojis.count) emojis supported on this platform")
+        let unsupportedCount = allUsefulEmojis.count - supportedEmojis.count
 
         // Group supported emojis
         supportedEmojisByGroup = Dictionary(grouping: supportedEmojis) { emoji in
             emoji.group ?? 0
         }
+
+        // Group emojis by category for quick access
+
     }
 
     // MARK: - Public API
@@ -38,7 +41,9 @@ class AppEmojiManager {
     }
 
     func getEmojis(for group: EmojiGroup) -> [EmojibaseEmoji] {
-        return supportedEmojisByGroup[group.rawValue] ?? []
+
+        let supportedEmojisForGroup = supportedEmojisByGroup[group.rawValue] ?? []
+        return supportedEmojisForGroup
     }
 
     @MainActor

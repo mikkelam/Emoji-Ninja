@@ -252,7 +252,7 @@ public class EmojiSearchKit {
     /// Search with additional options
     func advancedSearch(
         query: String,
-        categories: [EmojiCategory]? = nil,
+        categories: [EmojiGroup]? = nil,
         excludeTerms: [String]? = nil,
         limit: Int = 50
     ) -> [SearchResult] {
@@ -270,17 +270,7 @@ public class EmojiSearchKit {
         if let categories = categories, !categories.isEmpty {
             let allowedGroups = Set(
                 categories.compactMap { category -> Int? in
-                    switch category {
-                    case .smileysAndEmotion: return 0
-                    case .peopleAndBody: return 1
-                    case .animalsAndNature: return 3
-                    case .foodAndDrink: return 4
-                    case .travelAndPlaces: return 5
-                    case .activities: return 6
-                    case .objects: return 7
-                    case .symbols: return 8
-                    case .flags: return 9
-                    }
+                    return category.rawValue
                 })
 
             results = results.filter { result in

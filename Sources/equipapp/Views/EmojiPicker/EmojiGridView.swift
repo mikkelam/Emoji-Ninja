@@ -4,9 +4,10 @@ import equiplib
 struct EmojiGridView: View {
     let geometry: GeometryProxy
     let selectedEmojiIndex: Int
-    let selectedCategory: EmojiCategory?
+    let selectedCategory: EmojiGroup?
     let onEmojiSelected: (String) -> Void
     @ObservedObject var emojiManager: EmojiManager
+    @ObservedObject var viewModel: EmojiPickerViewModel
     @Environment(\.theme) private var theme
 
     private var adaptiveColumns: [GridItem] {
@@ -15,15 +16,19 @@ struct EmojiGridView: View {
             count: 8)
     }
 
-    private var emojiDataWithIndices:
-        [(category: EmojiCategory, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)])]
+    private var emojiData:
+        [(category: EmojiGroup, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)])]
     {
+        let allCategories = EmojiGroup.availableGroups
         let categories =
-            selectedCategory != nil ? [selectedCategory!] : EmojiCategory.availableCategories
-        var globalIndex = 0
+            viewModel.selectedCategory != nil ? [viewModel.selectedCategory!] : allCategories
 
-        return categories.compactMap { category in
-            let emojis = category.emojis
+        var globalIndex = 0
+        let result = categories.compactMap {
+            category -> (
+                category: EmojiGroup, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)]
+            )? in
+            let emojis = AppEmojiManager.shared.getEmojis(for: category)
             guard !emojis.isEmpty else { return nil }
 
             let emojiIndices = emojis.map { emoji in
@@ -34,13 +39,15 @@ struct EmojiGridView: View {
 
             return (category: category, emojiIndices: emojiIndices)
         }
+
+        return result
     }
 
     var body: some View {
-        ForEach(emojiDataWithIndices, id: \.category.rawValue) { categoryData in
+        ForEach(emojiData, id: \.category.rawValue) { categoryData in
             Section {
                 LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
-                    ForEach(categoryData.emojiIndices, id: \.emoji.unicode) { emojiData in
+                    ForEach(categoryData.emojiIndices, id: \.globalIndex) { emojiData in
                         EmojiButton(
                             emoji: emojiData.emoji.unicode,
                             isSelected: emojiData.globalIndex == selectedEmojiIndex,
@@ -48,9 +55,12 @@ struct EmojiGridView: View {
                         ) {
                             onEmojiSelected(emojiData.emoji.unicode)
                         }
-                        .id("emoji_\(emojiData.globalIndex)")
+                        .id(
+                            "emoji_\(emojiData.globalIndex)_\(viewModel.selectedCategory?.rawValue ?? -1)"
+                        )
                     }
                 }
+                .id("grid_\(categoryData.category.rawValue)_\(categoryData.emojiIndices.count)")
             } header: {
                 HStack {
                     Text(categoryData.category.name)
@@ -61,9 +71,11 @@ struct EmojiGridView: View {
                 .padding(.bottom, 2)
                 .padding(
                     .top,
-                    categoryData.category == EmojiCategory.availableCategories.first
+                    categoryData.category == EmojiGroup.availableGroups.first
                         ? 0 : theme.spacing.medium)
             }
+            .id(categoryData.category.rawValue)
         }
+        .id("category_grid_\(viewModel.selectedCategory?.rawValue ?? -1)_\(emojiData.count)")
     }
 }

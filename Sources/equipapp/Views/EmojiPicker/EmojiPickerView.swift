@@ -48,7 +48,8 @@ struct EmojiPickerView: View {
                                     selectedEmojiIndex: viewModel.selectedEmojiIndex,
                                     selectedCategory: viewModel.selectedCategory,
                                     onEmojiSelected: onEmojiSelected,
-                                    emojiManager: emojiManager
+                                    emojiManager: emojiManager,
+                                    viewModel: viewModel
                                 )
                             } else {
                                 // Search results mode
@@ -66,7 +67,19 @@ struct EmojiPickerView: View {
                     }
                     .onChange(of: viewModel.selectedEmojiIndex) { _, newIndex in
                         withAnimation(.easeInOut(duration: 0.3)) {
-                            proxy.scrollTo("emoji_\(newIndex)", anchor: .center)
+                            proxy.scrollTo(
+                                "emoji_\(newIndex)_\(viewModel.selectedCategory?.rawValue ?? -1)",
+                                anchor: .center)
+                        }
+                    }
+                    .onChange(of: viewModel.selectedCategory) { _, _ in
+                        // When category changes, scroll to the selected emoji
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                proxy.scrollTo(
+                                    "emoji_\(viewModel.selectedEmojiIndex)_\(viewModel.selectedCategory?.rawValue ?? -1)",
+                                    anchor: .center)
+                            }
                         }
                     }
                 }

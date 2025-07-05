@@ -156,7 +156,6 @@ class EmojiManager: ObservableObject {
 
     private func showBriefFeedback(emoji: String) {
         // Simple console feedback - could be enhanced with toast notification
-        print("📋 Copied: \(emoji)")
     }
 
     private func setupHotKey() {
@@ -166,7 +165,6 @@ class EmojiManager: ObservableObject {
                 self?.showPicker()
             }
         }
-        print("🔥 Global hotkey registered: Cmd+Ctrl+Space")
     }
 
     private func setupThemeObserver() {

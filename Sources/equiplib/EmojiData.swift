@@ -75,28 +75,31 @@ public enum EmojibaseEmoticon: Codable {
 public enum EmojiGroup: Int, CaseIterable {
     case smileysAndEmotion = 0
     case peopleAndBody = 1
-    case animalsAndNature = 2
-    case foodAndDrink = 3
-    case travelAndPlaces = 4
-    case activities = 5
-    case objects = 6
-    case symbols = 7
-    case flags = 8
+    case component = 2
+    case animalsAndNature = 3
+    case foodAndDrink = 4
+    case travelAndPlaces = 5
+    case activities = 6
+    case objects = 7
+    case symbols = 8
+    case flags = 9
 
     public var name: String {
         switch self {
         case .smileysAndEmotion:
-            return "Smileys & Emotion"
+            return "Smileys & People"
         case .peopleAndBody:
             return "People & Body"
+        case .component:
+            return "Components"
         case .animalsAndNature:
             return "Animals & Nature"
         case .foodAndDrink:
             return "Food & Drink"
-        case .travelAndPlaces:
-            return "Travel & Places"
         case .activities:
             return "Activities"
+        case .travelAndPlaces:
+            return "Travel & Places"
         case .objects:
             return "Objects"
         case .symbols:
@@ -106,28 +109,28 @@ public enum EmojiGroup: Int, CaseIterable {
         }
     }
 
-    public var icon: String {
-        switch self {
-        case .smileysAndEmotion:
-            return "😀"
-        case .peopleAndBody:
-            return "👋"
-        case .animalsAndNature:
-            return "🐱"
-        case .foodAndDrink:
-            return "🍎"
-        case .travelAndPlaces:
-            return "🚗"
-        case .activities:
-            return "⚽"
-        case .objects:
-            return "💡"
-        case .symbols:
-            return "❤️"
-        case .flags:
-            return "🏳️"
-        }
-    }
+    // public var icon: String {
+    //     switch self {
+    //     case .smileysAndEmotion:
+    //         return "😀"
+    //     case .peopleAndBody:
+    //         return "👋"
+    //     case .peopleAndBody:
+    //         return "🐱"
+    //     case .foodAndDrink:
+    //         return "🍎"
+    //     case .travelAndPlaces:
+    //         return "🚗"
+    //     case .activities:
+    //         return "⚽"
+    //     case .objects:
+    //         return "💡"
+    //     case .symbols:
+    //         return "❤️"
+    //     case .flags:
+    //         return "🏳️"
+    //     }
+    // }
 }
 
 // MARK: - Emoji Font Support Checking

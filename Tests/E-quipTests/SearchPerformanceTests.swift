@@ -136,15 +136,15 @@ final class SearchPerformanceTests: XCTestCase {
 
         print("   SearchKit results: \(searchKitResults.count)")
 
-        // Verify EmojiCategory.searchEmojis uses SearchKit
-        let categoryResults = EmojiCategory.searchEmojis(query: query)
-        print("   Category search results: \(categoryResults.count)")
+        // Verify EmojiGroup.searchEmojis uses SearchKit
+        let groupResults = EmojiGroup.searchEmojis(query: query)
+        print("   Group search results: \(groupResults.count)")
 
-        // Test filtered category search uses SearchKit
-        if let smileysCategory = EmojiCategory.availableCategories.first(where: {
-            $0 == .smileysAndEmotion
+        // Test filtered group search uses SearchKit
+        if let smileysGroup = EmojiGroup.availableGroups.first(where: {
+            $0 == .smileysAndPeople
         }) {
-            let filteredResults = smileysCategory.filteredEmojis(searchQuery: "happy")
+            let filteredResults = smileysGroup.filteredEmojis(searchQuery: "happy")
             print("   Filtered category results: \(filteredResults.count)")
         }
 

@@ -1,16 +1,27 @@
 import SwiftUI
 
 struct MenuBarView: View {
-    @ObservedObject var appState: AppState
-    @ObservedObject var emojiManager: EmojiManager
-    @ObservedObject var themeManager = ThemeManager.shared
+    @StateObject private var viewModel: MenuBarViewModel
     @Environment(\.theme) private var theme
+
+    init(
+        appState: AppState, emojiManager: EmojiManager,
+        themeManager: ThemeManager = ThemeManager.shared
+    ) {
+        self._viewModel = StateObject(
+            wrappedValue: MenuBarViewModel(
+                appState: appState,
+                emojiManager: emojiManager,
+                themeManager: themeManager
+            )
+        )
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.small) {
             // Show Emoji Picker Button
             Button(action: {
-                emojiManager.showPicker()
+                viewModel.showEmojiPicker()
             }) {
                 HStack {
                     Text("Show Emoji Picker")
@@ -32,8 +43,8 @@ struct MenuBarView: View {
                 Toggle(
                     "Launch at Login",
                     isOn: Binding(
-                        get: { appState.launchAtLogin },
-                        set: { appState.launchAtLogin = $0 }
+                        get: { viewModel.launchAtLogin },
+                        set: { viewModel.launchAtLogin = $0 }
                     )
                 )
                 .font(theme.typography.body)
@@ -43,10 +54,12 @@ struct MenuBarView: View {
                     .font(theme.typography.caption)
                     .foregroundColor(theme.colors.text.secondary)
             }
-            .alert("Launch at Login Error", isPresented: $appState.showingLaunchAtLoginAlert) {
-                Button("OK") {}
+            .alert("Launch at Login Error", isPresented: $viewModel.showingLaunchAtLoginAlert) {
+                Button("OK") {
+                    viewModel.dismissLaunchAtLoginAlert()
+                }
             } message: {
-                Text(appState.launchAtLoginError ?? "Unknown error")
+                Text(viewModel.launchAtLoginError ?? "Unknown error")
             }
 
             Divider()
@@ -54,16 +67,16 @@ struct MenuBarView: View {
 
             // Theme Submenu
             Menu {
-                Button("Light \(themeManager.themeType == .light ? "✓" : "")") {
-                    themeManager.setTheme(.light)
+                Button("Light \(viewModel.isCurrentTheme(.light) ? "✓" : "")") {
+                    viewModel.setTheme(.light)
                 }
 
-                Button("Dark \(themeManager.themeType == .dark ? "✓" : "")") {
-                    themeManager.setTheme(.dark)
+                Button("Dark \(viewModel.isCurrentTheme(.dark) ? "✓" : "")") {
+                    viewModel.setTheme(.dark)
                 }
 
-                Button("System \(themeManager.themeType == .system ? "✓" : "")") {
-                    themeManager.setTheme(.system)
+                Button("System \(viewModel.isCurrentTheme(.system) ? "✓" : "")") {
+                    viewModel.setTheme(.system)
                 }
             } label: {
                 HStack {
@@ -80,7 +93,7 @@ struct MenuBarView: View {
 
             // Quit Button
             Button(action: {
-                NSApplication.shared.terminate(nil)
+                viewModel.quitApp()
             }) {
                 HStack {
                     Text("Quit E-quip")

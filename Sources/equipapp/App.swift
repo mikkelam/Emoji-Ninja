@@ -56,10 +56,6 @@ struct EQuipApp: App {
         let allEmojis = dataManager.getAllEmojis()
         let availableGroups = dataManager.getAvailableGroups()
 
-        print("\n📊 E-QUIP EMOJI DATA STATISTICS")
-        print(String(repeating: "=", count: 40))
-        print("📦 Total supported emojis: \(allEmojis.count)")
-        print("📁 Available categories: \(availableGroups.count)")
-        print("")
+        // Statistics available for debugging if needed
     }
 }

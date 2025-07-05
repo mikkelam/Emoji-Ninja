@@ -76,16 +76,16 @@ final class EmojiDataTests: XCTestCase {
         }
         print("✅ All groups have emojis")
 
-        // Test that categories work through EmojiCategory
-        let availableCategories = EmojiCategory.availableCategories
-        assert(!availableCategories.isEmpty, "❌ No categories available")
-        print("✅ Categories accessible through EmojiCategory")
+        // Test that groups work through EmojiGroup
+        let availableGroups = EmojiGroup.availableGroups
+        assert(!availableGroups.isEmpty, "❌ No groups available")
+        print("✅ Groups accessible through EmojiGroup")
 
-        // Test specific well-known categories
-        let smileysCategory = availableCategories.first { $0.name.contains("Smileys") }
-        assert(smileysCategory != nil, "❌ Smileys category not found")
-        assert(!smileysCategory!.emojis.isEmpty, "❌ Smileys category has no emojis")
-        print("✅ Smileys category has \(smileysCategory!.emojis.count) emojis")
+        // Test specific well-known groups
+        let smileysGroup = availableGroups.first { $0.name.contains("Smileys") }
+        assert(smileysGroup != nil, "❌ Smileys group not found")
+        assert(!smileysGroup!.emojis.isEmpty, "❌ Smileys group has no emojis")
+        print("✅ Smileys group has \(smileysGroup!.emojis.count) emojis")
     }
 
     // MARK: - Search Tests
@@ -125,10 +125,10 @@ final class EmojiDataTests: XCTestCase {
         XCTAssertEqual(caseResults1.count, caseResults2.count, "Search is case sensitive")
         print("✅ Search is case insensitive")
 
-        // Test search through EmojiCategory
-        let categorySearchResults = EmojiCategory.searchEmojis(query: "heart")
-        XCTAssertFalse(categorySearchResults.isEmpty, "Category search failed")
-        print("✅ Category search works: \(categorySearchResults.count) results for 'heart'")
+        // Test search through EmojiGroup
+        let groupSearchResults = EmojiGroup.searchEmojis(query: "heart")
+        XCTAssertFalse(groupSearchResults.isEmpty, "Group search failed")
+        print("✅ Group search works: \(groupSearchResults.count) results for 'heart'")
     }
 
     // MARK: - Emoji Properties Tests

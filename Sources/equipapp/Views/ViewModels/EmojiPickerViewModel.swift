@@ -5,7 +5,7 @@ import equiplib
 @MainActor
 class EmojiPickerViewModel: ObservableObject {
     @Published var searchText = ""
-    @Published var selectedCategory: EmojiCategory?
+    @Published var selectedCategory: EmojiGroup?
     @Published var selectedEmojiIndex = 0
     @Published var currentSearchResults: [EmojibaseEmoji] = []
     @Published var searchResultsId = UUID()
@@ -25,6 +25,13 @@ class EmojiPickerViewModel: ObservableObject {
                     self?.resetSearch()
                     self?.emojiManager.shouldResetSearch = false
                 }
+            }
+            .store(in: &cancellables)
+
+        // Reset selected emoji index when category changes
+        $selectedCategory
+            .sink { [weak self] newCategory in
+                self?.selectedEmojiIndex = 0
             }
             .store(in: &cancellables)
     }
@@ -81,6 +88,7 @@ class EmojiPickerViewModel: ObservableObject {
     func resetSearch() {
         searchText = ""
         selectedEmojiIndex = 0
+        selectedCategory = nil
         updateSearchResults()
     }
 
@@ -94,8 +102,9 @@ class EmojiPickerViewModel: ObservableObject {
     private func getAllEmojis() -> [EmojibaseEmoji] {
         if searchText.isEmpty {
             let categories =
-                selectedCategory != nil ? [selectedCategory!] : EmojiCategory.availableCategories
-            return categories.flatMap { $0.emojis }
+                selectedCategory != nil ? [selectedCategory!] : EmojiGroup.availableGroups
+            let result = categories.flatMap { AppEmojiManager.shared.getEmojis(for: $0) }
+            return result
         } else {
             return currentSearchResults
         }
