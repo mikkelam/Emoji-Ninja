@@ -100,29 +100,37 @@ struct EmojiPickerView: View {
                     .iconStyle(color: .secondary, size: .medium)
                     .padding(.leading, theme.spacing.medium)
 
-                TextField("Search emojis...", text: $searchText)
-                    .textFieldStyle(.plain)
-                    .focused($isSearchFocused)
-                    .font(theme.typography.title)
-                    .onKeyPress { keyPress in
-                        // Handle arrow keys for navigation, let other keys through for typing
-                        if keyPress.key == .upArrow || keyPress.key == .downArrow
-                            || keyPress.key == .leftArrow || keyPress.key == .rightArrow
-                        {
-                            return handleKeyPress(keyPress)
-                        } else if keyPress.key == .return {
-                            selectCurrentEmoji()
-                            return .handled
-                        } else if keyPress.key == .escape {
-                            emojiManager.hidePicker()
-                            return .handled
+                ZStack(alignment: .leading) {
+                    if searchText.isEmpty {
+                        Text("Search emojis...")
+                            .foregroundColor(theme.colors.text.tertiary)
+                            .font(theme.typography.title)
+                    }
+
+                    TextField("", text: $searchText)
+                        .textFieldStyle(.plain)
+                        .focused($isSearchFocused)
+                        .font(theme.typography.title)
+                        .onKeyPress { keyPress in
+                            // Handle arrow keys for navigation, let other keys through for typing
+                            if keyPress.key == .upArrow || keyPress.key == .downArrow
+                                || keyPress.key == .leftArrow || keyPress.key == .rightArrow
+                            {
+                                return handleKeyPress(keyPress)
+                            } else if keyPress.key == .return {
+                                selectCurrentEmoji()
+                                return .handled
+                            } else if keyPress.key == .escape {
+                                emojiManager.hidePicker()
+                                return .handled
+                            }
+                            return .ignored
                         }
-                        return .ignored
-                    }
-                    .onSubmit {
-                        // Select current emoji on Enter
-                        selectCurrentEmoji()
-                    }
+                        .onSubmit {
+                            // Select current emoji on Enter
+                            selectCurrentEmoji()
+                        }
+                }
 
                 if !searchText.isEmpty {
                     Button(action: { searchText = "" }) {

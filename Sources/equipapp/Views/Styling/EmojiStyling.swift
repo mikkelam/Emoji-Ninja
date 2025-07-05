@@ -85,19 +85,7 @@ struct SearchBarStyle: ViewModifier {
             .font(theme.typography.title)
             .foregroundColor(theme.colors.text.primary)
             .frame(maxWidth: .infinity)
-            .frame(height: 50)
-        // .background(
-        //     Rectangle()
-        //         .fill(theme.colors.surface)
-        //         .overlay(
-        //             Rectangle()
-        //                 .stroke(borderColor, lineWidth: 1)
-        //         )
-        // )
-    }
-
-    private var borderColor: Color {
-        theme.colors.border.secondary
+            .frame(height: 60)
     }
 }
 
@@ -129,14 +117,6 @@ struct EmptyStateStyle: ViewModifier {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(theme.spacing.xxl)
-            .background(
-                RoundedRectangle(cornerRadius: theme.cornerRadius.large)
-                    .fill(theme.colors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: theme.cornerRadius.large)
-                            .stroke(theme.colors.border.secondary, lineWidth: 1)
-                    )
-            )
     }
 }
 
@@ -245,32 +225,6 @@ extension View {
 
     func iconStyle(color: IconColor = .primary, size: IconSize = .medium) -> some View {
         modifier(IconStyle(color: color, size: size))
-    }
-}
-
-// MARK: - Accessibility Support
-struct AccessibilityEmojiButton: ViewModifier {
-    @Environment(\.theme) private var theme
-    let emoji: String
-    let description: String
-    let isSelected: Bool
-
-    func body(content: Content) -> some View {
-        content
-            .accessibilityLabel(description)
-            .accessibilityValue(isSelected ? "selected" : "not selected")
-            .accessibilityHint("Double-tap to select emoji")
-            .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-    }
-}
-
-extension View {
-    func accessibilityEmojiButton(emoji: String, description: String, isSelected: Bool = false)
-        -> some View
-    {
-        modifier(
-            AccessibilityEmojiButton(emoji: emoji, description: description, isSelected: isSelected)
-        )
     }
 }
 

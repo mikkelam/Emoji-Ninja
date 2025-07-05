@@ -1,4 +1,5 @@
 import AppKit
+@preconcurrency import Combine
 @preconcurrency import HotKey
 import SwiftUI
 import equiplib
@@ -11,9 +12,11 @@ class EmojiManager: ObservableObject {
 
     private var pickerWindow: NSWindow?
     private nonisolated(unsafe) var showPickerHotKey: HotKey?
+    private nonisolated(unsafe) var themeObserver: AnyCancellable?
 
     init() {
         setupHotKey()
+        setupThemeObserver()
     }
 
     func showPicker() {
@@ -166,7 +169,23 @@ class EmojiManager: ObservableObject {
         print("🔥 Global hotkey registered: Cmd+Ctrl+Space")
     }
 
+    private func setupThemeObserver() {
+        themeObserver = ThemeManager.shared.$currentTheme
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.recreatePickerWindowIfNeeded()
+            }
+    }
+
+    private func recreatePickerWindowIfNeeded() {
+        if pickerWindow != nil {
+            pickerWindow?.close()
+            pickerWindow = nil
+        }
+    }
+
     deinit {
         showPickerHotKey = nil
+        themeObserver?.cancel()
     }
 }

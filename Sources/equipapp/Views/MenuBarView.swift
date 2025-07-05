@@ -53,8 +53,36 @@ struct MenuBarView: View {
             Divider()
                 .background(theme.colors.border.secondary)
 
-            // Theme Settings
-            ThemeSettingsView(themeManager: ThemeManager.shared)
+            // Theme Submenu
+            Menu {
+                ForEach(ThemeType.allCases, id: \.self) { themeType in
+                    Button(action: {
+                        ThemeManager.shared.setTheme(themeType)
+                    }) {
+                        HStack {
+                            Image(systemName: themeType.icon)
+                            Text(themeType.displayName)
+
+                            if ThemeManager.shared.themeType == themeType {
+                                Spacer()
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "paintbrush")
+                        .iconStyle(color: .primary, size: .medium)
+                    Text("Theme")
+                        .font(theme.typography.body)
+                        .foregroundColor(theme.colors.text.primary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .iconStyle(color: .secondary, size: .small)
+                }
+            }
+            .buttonStyle(.plain)
 
             Divider()
                 .background(theme.colors.border.secondary)

@@ -186,7 +186,7 @@ struct DarkTheme: Theme {
 // MARK: - Light Theme Implementation
 struct LightTheme: Theme {
     let colors = ColorScheme(
-        background: Color(red: 250 / 255, green: 250 / 255, blue: 250 / 255),
+        background: Color(red: 232 / 255, green: 232 / 255, blue: 232 / 255),
         surface: Color.white,
         surfaceElevated: Color.white,
         primary: Color.black,
