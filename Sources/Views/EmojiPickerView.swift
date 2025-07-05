@@ -1,4 +1,3 @@
-import EmojiKit
 import SwiftUI
 
 struct EmojiPickerView: View {
@@ -168,7 +167,7 @@ struct EmojiPickerView: View {
                 )
 
                 // Individual category buttons
-                ForEach(EmojiCategory.allCases, id: \.self) { category in
+                ForEach(EmojiCategory.availableCategories, id: \.self) { category in
                     CategoryPill(
                         title: category.name,
                         isSelected: selectedCategory == category,
@@ -186,13 +185,13 @@ struct EmojiPickerView: View {
         ForEach(emojiDataWithIndices, id: \.category.rawValue) { categoryData in
             Section {
                 LazyVGrid(columns: adaptiveColumns, spacing: 8) {
-                    ForEach(categoryData.emojiIndices, id: \.emoji.char) { emojiData in
+                    ForEach(categoryData.emojiIndices, id: \.emoji.unicode) { emojiData in
                         EmojiButton(
-                            emoji: emojiData.emoji.char,
+                            emoji: emojiData.emoji.unicode,
                             isSelected: emojiData.globalIndex == selectedEmojiIndex,
                             geometry: geometry
                         ) {
-                            onEmojiSelected(emojiData.emoji.char)
+                            onEmojiSelected(emojiData.emoji.unicode)
                         }
                         .id("emoji_\(emojiData.globalIndex)")
                     }
@@ -205,7 +204,9 @@ struct EmojiPickerView: View {
                     Spacer()
                 }
                 .padding(.bottom, 2)
-                .padding(.top, categoryData.category == EmojiCategory.allCases.first ? 0 : 12)
+                .padding(
+                    .top,
+                    categoryData.category == EmojiCategory.availableCategories.first ? 0 : 12)
             }
         }
     }
@@ -231,13 +232,14 @@ struct EmojiPickerView: View {
                 .padding()
             } else {
                 LazyVGrid(columns: adaptiveColumns, spacing: 8) {
-                    ForEach(Array(searchResults.enumerated()), id: \.element) { index, emoji in
+                    ForEach(Array(searchResults.enumerated()), id: \.element.unicode) {
+                        index, emoji in
                         EmojiButton(
-                            emoji: emoji.char,
+                            emoji: emoji.unicode,
                             isSelected: index == selectedEmojiIndex,
                             geometry: geometry
                         ) {
-                            onEmojiSelected(emoji.char)
+                            onEmojiSelected(emoji.unicode)
                         }
                         .id("emoji_\(index)")
                     }
@@ -251,33 +253,19 @@ struct EmojiPickerView: View {
         if let selectedCategory = selectedCategory {
             return [selectedCategory]
         } else {
-            return EmojiCategory.allCases
+            return EmojiCategory.availableCategories
         }
     }
 
-    private var searchResults: [Emoji] {
+    private var searchResults: [EmojibaseEmoji] {
         guard !searchText.isEmpty else { return [] }
-
-        let lowercasedSearch = searchText.lowercased()
-        var results: [Emoji] = []
-
-        for category in EmojiCategory.allCases {
-            let categoryResults = category.emojis.filter { emoji in
-                // Search in emoji name
-                emoji.localizedName.lowercased().contains(lowercasedSearch)
-                    // Search in unicode name
-                    || emoji.unicodeName.lowercased().contains(lowercasedSearch)
-            }
-            results.append(contentsOf: categoryResults)
-        }
-
-        return results
+        return EmojiCategory.searchEmojis(query: searchText)
     }
 
     // MARK: - Helper Functions
 
     private struct EmojiWithIndex {
-        let emoji: Emoji
+        let emoji: EmojibaseEmoji
         let globalIndex: Int
     }
 
@@ -298,7 +286,7 @@ struct EmojiPickerView: View {
         }
     }
 
-    private func getAllEmojis() -> [Emoji] {
+    private func getAllEmojis() -> [EmojibaseEmoji] {
         if searchText.isEmpty {
             return visibleCategories.flatMap { $0.emojis }
         } else {
@@ -343,7 +331,7 @@ struct EmojiPickerView: View {
         let allEmojis = getAllEmojis()
         if selectedEmojiIndex < allEmojis.count {
             let selectedEmoji = allEmojis[selectedEmojiIndex]
-            onEmojiSelected(selectedEmoji.char)
+            onEmojiSelected(selectedEmoji.unicode)
         }
     }
 }

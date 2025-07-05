@@ -1,5 +1,4 @@
 import AppKit
-import EmojiKit
 @preconcurrency import HotKey
 import SwiftUI
 

@@ -1,28 +1,30 @@
-import EmojiKit
 import Foundation
 
 enum EmojiCategory: String, CaseIterable {
-    case smileysAndPeople = "smileysAndPeople"
+    case smileysAndEmotion = "smileysAndEmotion"
+    case peopleAndBody = "peopleAndBody"
     case animalsAndNature = "animalsAndNature"
     case foodAndDrink = "foodAndDrink"
-    case activity = "activity"
     case travelAndPlaces = "travelAndPlaces"
+    case activities = "activities"
     case objects = "objects"
     case symbols = "symbols"
     case flags = "flags"
 
     var name: String {
         switch self {
-        case .smileysAndPeople:
-            return "Smileys & People"
+        case .smileysAndEmotion:
+            return "Smileys & Emotion"
+        case .peopleAndBody:
+            return "People & Body"
         case .animalsAndNature:
             return "Animals & Nature"
         case .foodAndDrink:
             return "Food & Drink"
-        case .activity:
-            return "Activity"
         case .travelAndPlaces:
             return "Travel & Places"
+        case .activities:
+            return "Activities"
         case .objects:
             return "Objects"
         case .symbols:
@@ -34,16 +36,18 @@ enum EmojiCategory: String, CaseIterable {
 
     var icon: String {
         switch self {
-        case .smileysAndPeople:
+        case .smileysAndEmotion:
             return "😀"
+        case .peopleAndBody:
+            return "👋"
         case .animalsAndNature:
             return "🐱"
         case .foodAndDrink:
             return "🍎"
-        case .activity:
-            return "⚽"
         case .travelAndPlaces:
             return "🚗"
+        case .activities:
+            return "⚽"
         case .objects:
             return "💡"
         case .symbols:
@@ -53,25 +57,31 @@ enum EmojiCategory: String, CaseIterable {
         }
     }
 
-    var emojis: [Emoji] {
+    var group: EmojiGroup {
         switch self {
-        case .smileysAndPeople:
-            return EmojiKit.EmojiCategory.smileysAndPeople.emojis
+        case .smileysAndEmotion:
+            return .smileysAndEmotion
+        case .peopleAndBody:
+            return .peopleAndBody
         case .animalsAndNature:
-            return EmojiKit.EmojiCategory.animalsAndNature.emojis
+            return .animalsAndNature
         case .foodAndDrink:
-            return EmojiKit.EmojiCategory.foodAndDrink.emojis
-        case .activity:
-            return EmojiKit.EmojiCategory.activity.emojis
+            return .foodAndDrink
         case .travelAndPlaces:
-            return EmojiKit.EmojiCategory.travelAndPlaces.emojis
+            return .travelAndPlaces
+        case .activities:
+            return .activities
         case .objects:
-            return EmojiKit.EmojiCategory.objects.emojis
+            return .objects
         case .symbols:
-            return EmojiKit.EmojiCategory.symbols.emojis
+            return .symbols
         case .flags:
-            return EmojiKit.EmojiCategory.flags.emojis
+            return .flags
         }
+    }
+
+    var emojis: [EmojibaseEmoji] {
+        return EmojiDataManager.shared.getEmojis(for: group)
     }
 
     var emojiCount: Int {
@@ -81,34 +91,30 @@ enum EmojiCategory: String, CaseIterable {
 
 // MARK: - Extensions for convenience
 extension EmojiCategory {
-    static var allEmojis: [Emoji] {
-        return allCases.flatMap { $0.emojis }
+    static var allEmojis: [EmojibaseEmoji] {
+        return EmojiDataManager.shared.getAllEmojis()
     }
 
-    static func searchEmojis(query: String) -> [Emoji] {
-        guard !query.isEmpty else { return [] }
-
-        let lowercasedQuery = query.lowercased()
-        var results: [Emoji] = []
-
-        for category in allCases {
-            let categoryResults = category.emojis.filter { emoji in
-                emoji.localizedName.lowercased().contains(lowercasedQuery)
-                    || emoji.unicodeName.lowercased().contains(lowercasedQuery)
-            }
-            results.append(contentsOf: categoryResults)
-        }
-
-        return results
+    static var availableCategories: [EmojiCategory] {
+        return allCases.filter { !$0.emojis.isEmpty }
     }
 
-    func filteredEmojis(searchQuery: String) -> [Emoji] {
+    static func searchEmojis(query: String) -> [EmojibaseEmoji] {
+        return EmojiDataManager.shared.searchEmojis(query: query)
+    }
+
+    func filteredEmojis(searchQuery: String) -> [EmojibaseEmoji] {
         guard !searchQuery.isEmpty else { return emojis }
 
-        let lowercasedQuery = searchQuery.lowercased()
+        let lowercaseQuery = searchQuery.lowercased()
         return emojis.filter { emoji in
-            emoji.localizedName.lowercased().contains(lowercasedQuery)
-                || emoji.unicodeName.lowercased().contains(lowercasedQuery)
+            emoji.label.lowercased().contains(lowercaseQuery)
+                || emoji.tags?.contains { tag in
+                    tag.lowercased().contains(lowercaseQuery)
+                } == true
+                || emoji.emoticon?.values.contains { emoticon in
+                    emoticon.lowercased().contains(lowercaseQuery)
+                } == true
         }
     }
 }

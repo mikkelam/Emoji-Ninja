@@ -1,5 +1,4 @@
 import AppKit
-import EmojiKit
 import ServiceManagement
 import SwiftUI
 
@@ -7,6 +6,12 @@ import SwiftUI
 struct EQuipApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var emojiManager = EmojiManager()
+
+    init() {
+        // Run emoji data tests and validation on startup
+        runEmojiDataTests()
+        logEmojiDataStats()
+    }
 
     private var menuBarImage: NSImage {
         let image = NSImage(size: NSSize(width: 18, height: 18))
@@ -41,5 +46,40 @@ struct EQuipApp: App {
             Image(nsImage: menuBarImage)
         }
         .menuBarExtraStyle(.menu)
+    }
+
+    private func runEmojiDataTests() {
+        EmojiDataTests.runAllTests()
+    }
+
+    private func logEmojiDataStats() {
+        let dataManager = EmojiDataManager.shared
+        let allEmojis = dataManager.getAllEmojis()
+        let availableGroups = dataManager.getAvailableGroups()
+
+        print("\n📊 E-QUIP EMOJI DATA STATISTICS")
+        print(String(repeating: "=", count: 40))
+        print("📦 Total supported emojis: \(allEmojis.count)")
+        print("📁 Available categories: \(availableGroups.count)")
+        print("")
+
+        // Log detailed category counts
+        for group in availableGroups {
+            let groupEmojis = dataManager.getEmojis(for: group)
+            print("  \(group.icon) \(group.name): \(groupEmojis.count) emojis")
+        }
+
+        print("")
+        print("🔍 Sample search results:")
+
+        // Test common searches
+        let commonSearches = ["smile", "heart", "fire", "party"]
+        for query in commonSearches {
+            let results = dataManager.searchEmojis(query: query)
+            print("  '\(query)': \(results.count) results")
+        }
+
+        print(String(repeating: "=", count: 40))
+        print("🎉 E-quip ready with \(allEmojis.count) emojis!")
     }
 }

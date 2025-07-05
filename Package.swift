@@ -9,15 +9,16 @@ let package = Package(
         .macOS(.v14)
     ],
     dependencies: [
-        .package(url: "https://github.com/soffes/HotKey", from: "0.2.0"),
-        .package(url: "https://github.com/danielsaidi/EmojiKit.git", from: "1.7.4"),
+        .package(url: "https://github.com/soffes/HotKey", from: "0.2.0")
     ],
     targets: [
         .executableTarget(
             name: "E-quip",
             dependencies: [
-                "HotKey",
-                "EmojiKit",
+                "HotKey"
+            ],
+            resources: [
+                .process("Resources")
             ]
         )
     ]
