@@ -31,7 +31,7 @@ struct EmojiPickerView: View {
                 )
 
                 // Category Filter Pills
-                if viewModel.searchText.isEmpty {
+                if !viewModel.isInSearchMode {
                     CategoryFilterView(selectedCategory: $viewModel.selectedCategory)
                 }
 
@@ -41,7 +41,7 @@ struct EmojiPickerView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 4) {
-                            if viewModel.searchText.isEmpty {
+                            if !viewModel.isInSearchMode {
                                 // Category browsing mode
                                 EmojiGridView(
                                     geometry: geometry,

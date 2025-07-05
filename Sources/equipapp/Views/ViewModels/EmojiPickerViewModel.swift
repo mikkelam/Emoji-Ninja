@@ -12,6 +12,10 @@ class EmojiPickerViewModel: ObservableObject {
 
     private let emojiManager: EmojiManager
 
+    var isInSearchMode: Bool {
+        return searchText.count >= 2
+    }
+
     init(emojiManager: EmojiManager) {
         self.emojiManager = emojiManager
         setupObservers()
@@ -41,7 +45,7 @@ class EmojiPickerViewModel: ObservableObject {
     // MARK: - Public Methods
 
     func updateSearchResults() {
-        if searchText.isEmpty {
+        if !isInSearchMode {
             currentSearchResults = []
         } else {
             currentSearchResults = AppEmojiManager.shared.searchEmojisWithSearchKit(
@@ -100,7 +104,7 @@ class EmojiPickerViewModel: ObservableObject {
     // MARK: - Private Methods
 
     private func getAllEmojis() -> [EmojibaseEmoji] {
-        if searchText.isEmpty {
+        if !isInSearchMode {
             let categories =
                 selectedCategory != nil ? [selectedCategory!] : EmojiGroup.availableGroups
             let result = categories.flatMap { AppEmojiManager.shared.getEmojis(for: $0) }
