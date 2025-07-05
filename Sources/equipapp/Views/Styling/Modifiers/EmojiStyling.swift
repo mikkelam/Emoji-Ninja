@@ -54,8 +54,8 @@ struct CategoryPillStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(theme.typography.subheadline)
-            .padding(.horizontal, theme.spacing.medium)
+            .font(.title2)
+            .padding(.horizontal, theme.spacing.small)
             .padding(.vertical, theme.spacing.small)
             .background(
                 RoundedRectangle(cornerRadius: theme.cornerRadius.pill)

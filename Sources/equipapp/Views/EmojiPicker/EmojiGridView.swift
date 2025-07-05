@@ -64,9 +64,11 @@ struct EmojiGridView: View {
                 .id("grid_\(categoryData.category)_\(categoryData.emojiIndices.count)")
             } header: {
                 HStack {
+                    Text(categoryData.category.representativeEmoji)
+                        .font(.title3)
                     Text(categoryData.category.displayName)
                         .font(theme.typography.headline)
-                        .foregroundColor(theme.colors.text.primary)
+                        .foregroundColor(theme.colors.text.secondary)
                     Spacer()
                 }
                 .padding(.bottom, 2)

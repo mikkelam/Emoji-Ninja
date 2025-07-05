@@ -109,6 +109,31 @@ public enum EmojiGroup: Int, CaseIterable {
         }
     }
 
+    public var representativeEmoji: String {
+        switch self {
+        case .smileysAndEmotion:
+            return "😀"
+        case .peopleAndBody:
+            return "👋"
+        case .component:
+            return "🔧"
+        case .animalsAndNature:
+            return "🐱"
+        case .foodAndDrink:
+            return "🍎"
+        case .activities:
+            return "⚽"
+        case .travelAndPlaces:
+            return "🚗"
+        case .objects:
+            return "💡"
+        case .symbols:
+            return "❤️"
+        case .flags:
+            return "🏳️"
+        }
+    }
+
     // public var icon: String {
     //     switch self {
     //     case .smileysAndEmotion:

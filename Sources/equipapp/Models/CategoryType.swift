@@ -16,6 +16,15 @@ enum CategoryType: Hashable {
         }
     }
 
+    var representativeEmoji: String {
+        switch self {
+        case .frequentlyUsed:
+            return "⭐"
+        case .regular(let group):
+            return group.representativeEmoji
+        }
+    }
+
     var isAvailable: Bool {
         switch self {
         case .frequentlyUsed:
