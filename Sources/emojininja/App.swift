@@ -44,6 +44,12 @@ struct EmojiNinjaApp: App {
         MenuBarExtra {
             MenuBarView(appState: appState, emojiManager: emojiManager, themeManager: themeManager)
                 .themedEnvironment(themeManager)
+                .onAppear {
+                    // Request accessibility permissions when app appears
+                    if !appState.checkAccessibilityPermissions() {
+                        appState.requestAccessibilityPermissions()
+                    }
+                }
         } label: {
             Image(nsImage: menuBarImage)
         }

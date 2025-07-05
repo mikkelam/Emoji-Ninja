@@ -24,5 +24,7 @@
 	</array>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>Emoji Ninja needs permission to send emojis to other applications.</string>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>Emoji Ninja needs accessibility permission to paste emojis into other applications.</string>
 </dict>
 </plist>

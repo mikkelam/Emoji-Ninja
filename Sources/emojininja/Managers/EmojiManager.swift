@@ -165,7 +165,6 @@ class EmojiManager: ObservableObject {
         FrequentlyUsedEmojiManager.shared.recordEmojiUsage(emoji)
         hidePicker()
 
-        // Brief delay to allow focus to return to previous app
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.typeEmojiDirectly(emoji)
         }
@@ -188,7 +187,6 @@ class EmojiManager: ObservableObject {
         }
 
         self.typeUnicodeDirectly(emoji)
-
     }
 
     private func typeUnicodeDirectly(_ emoji: String) {
@@ -206,23 +204,6 @@ class EmojiManager: ObservableObject {
         }
 
         print("⌨️ Typed emoji directly: \(emoji)")
-    }
-
-    private func promptForAccessibilityPermissions() {
-        let alert = NSAlert()
-        alert.messageText = "Accessibility Permission Required"
-        alert.informativeText =
-            "Emoji Ninja needs accessibility permissions to type emojis directly into other apps. Please enable it in System Settings > Privacy & Security > Accessibility."
-        alert.addButton(withTitle: "Open System Settings")
-        alert.addButton(withTitle: "Cancel")
-
-        if alert.runModal() == .alertFirstButtonReturn {
-            NSWorkspace.shared.open(
-                URL(
-                    string:
-                        "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
-                )!)
-        }
     }
 
     private func copyToClipboard(_ emoji: String) {

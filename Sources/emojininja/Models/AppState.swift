@@ -1,3 +1,5 @@
+import AppKit
+import ApplicationServices
 import Foundation
 import ServiceManagement
 
@@ -11,10 +13,15 @@ class AppState: ObservableObject {
 
     @Published var launchAtLoginError: String?
     @Published var showingLaunchAtLoginAlert = false
+    @Published var hasAccessibilityPermission = false
+    @Published var showingAccessibilityAlert = false
 
     init() {
         // Initialize launch at login state
         // checkLaunchAtLoginStatus()
+
+        // Check accessibility permissions on startup
+        _ = checkAccessibilityPermissions()
     }
 
     private func checkLaunchAtLoginStatus() {
@@ -50,5 +57,29 @@ class AppState: ObservableObject {
                 showingLaunchAtLoginAlert = true
             }
         }
+    }
+
+    func checkAccessibilityPermissions() -> Bool {
+        let accessEnabled = AXIsProcessTrusted()
+        hasAccessibilityPermission = accessEnabled
+        return accessEnabled
+    }
+
+    func requestAccessibilityPermissions() {
+        // Simply prompt for accessibility permissions without options first
+        let accessEnabled = AXIsProcessTrusted()
+        hasAccessibilityPermission = accessEnabled
+
+        if !accessEnabled {
+            // Open system preferences directly
+            openAccessibilitySettings()
+        }
+    }
+
+    func openAccessibilitySettings() {
+        let url = URL(
+            string:
+                "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+        NSWorkspace.shared.open(url)
     }
 }
