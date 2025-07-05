@@ -3,6 +3,7 @@ import SwiftUI
 struct MenuBarView: View {
     @ObservedObject var appState: AppState
     @ObservedObject var emojiManager: EmojiManager
+    @ObservedObject var themeManager = ThemeManager.shared
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -12,8 +13,6 @@ struct MenuBarView: View {
                 emojiManager.showPicker()
             }) {
                 HStack {
-                    Image(systemName: "face.smiling")
-                        .iconStyle(color: .primary, size: .medium)
                     Text("Show Emoji Picker")
                         .font(theme.typography.body)
                         .foregroundColor(theme.colors.text.primary)
@@ -55,31 +54,23 @@ struct MenuBarView: View {
 
             // Theme Submenu
             Menu {
-                ForEach(ThemeType.allCases, id: \.self) { themeType in
-                    Button(action: {
-                        ThemeManager.shared.setTheme(themeType)
-                    }) {
-                        HStack {
-                            Image(systemName: themeType.icon)
-                            Text(themeType.displayName)
+                Button("Light \(themeManager.themeType == .light ? "✓" : "")") {
+                    themeManager.setTheme(.light)
+                }
 
-                            if ThemeManager.shared.themeType == themeType {
-                                Spacer()
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
+                Button("Dark \(themeManager.themeType == .dark ? "✓" : "")") {
+                    themeManager.setTheme(.dark)
+                }
+
+                Button("System \(themeManager.themeType == .system ? "✓" : "")") {
+                    themeManager.setTheme(.system)
                 }
             } label: {
                 HStack {
-                    Image(systemName: "paintbrush")
-                        .iconStyle(color: .primary, size: .medium)
                     Text("Theme")
                         .font(theme.typography.body)
                         .foregroundColor(theme.colors.text.primary)
                     Spacer()
-                    Image(systemName: "chevron.right")
-                        .iconStyle(color: .secondary, size: .small)
                 }
             }
             .buttonStyle(.plain)
@@ -92,8 +83,6 @@ struct MenuBarView: View {
                 NSApplication.shared.terminate(nil)
             }) {
                 HStack {
-                    Image(systemName: "power")
-                        .iconStyle(color: .error, size: .medium)
                     Text("Quit E-quip")
                         .font(theme.typography.body)
                         .foregroundColor(theme.colors.text.primary)
@@ -109,7 +98,8 @@ struct MenuBarView: View {
 #Preview {
     MenuBarView(
         appState: AppState(),
-        emojiManager: EmojiManager()
+        emojiManager: EmojiManager(),
+        themeManager: ThemeManager.shared
     )
     .themedEnvironment(ThemeManager.shared)
 }

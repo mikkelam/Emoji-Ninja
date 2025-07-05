@@ -42,7 +42,7 @@ struct EQuipApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarView(appState: appState, emojiManager: emojiManager)
+            MenuBarView(appState: appState, emojiManager: emojiManager, themeManager: themeManager)
                 .themedEnvironment(themeManager)
         } label: {
             Image(nsImage: menuBarImage)
