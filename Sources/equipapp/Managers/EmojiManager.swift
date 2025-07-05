@@ -100,8 +100,8 @@ class EmojiManager: ObservableObject {
         let widthPercentage = screenWidth < 1800 ? 0.35 : 0.3
         let pickerWidth = screenWidth * widthPercentage
 
-        // Set height based on 3:2 aspect ratio (width:height)
-        let pickerHeight = pickerWidth * (2.0 / 3.0)
+        // Set height based on 4:3 aspect ratio (width:height)
+        let pickerHeight = pickerWidth * (3.0 / 4.0)
 
         return CGSize(width: pickerWidth, height: pickerHeight)
     }

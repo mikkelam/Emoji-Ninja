@@ -240,8 +240,8 @@ struct EmojiAnimations {
 // MARK: - Layout Constants
 struct EmojiLayout {
     static let gridColumns = 8
-    static let minButtonSize: CGFloat = 60
-    static let maxButtonSize: CGFloat = 120
+    static let minButtonSize: CGFloat = 58
+    static let maxButtonSize: CGFloat = 118
     static let searchBarHeight: CGFloat = 60
     static let categoryPillHeight: CGFloat = 32
     static let skinToneSelectorSize: CGFloat = 45
