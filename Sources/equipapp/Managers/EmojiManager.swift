@@ -14,6 +14,7 @@ class EmojiManager: ObservableObject {
     private nonisolated(unsafe) var showPickerHotKey: HotKey?
     private nonisolated(unsafe) var themeObserver: AnyCancellable?
     private var previousApp: NSRunningApplication?
+    private var lastScreenFrame: CGRect?
 
     init() {
         setupHotKey()
@@ -24,8 +25,17 @@ class EmojiManager: ObservableObject {
         // Store the currently focused app before showing picker
         previousApp = NSWorkspace.shared.frontmostApplication
 
-        if pickerWindow == nil {
+        // Get current screen
+        let currentScreen = getCurrentScreen()
+
+        // Recreate window if screen changed or doesn't exist
+        if pickerWindow == nil || lastScreenFrame != currentScreen.frame {
+            if pickerWindow != nil {
+                pickerWindow?.close()
+                pickerWindow = nil
+            }
             createPickerWindow()
+            lastScreenFrame = currentScreen.frame
         }
 
         guard let window = pickerWindow else { return }
@@ -50,7 +60,8 @@ class EmojiManager: ObservableObject {
     }
 
     private func createPickerWindow() {
-        let windowSize = calculateOptimalWindowSize()
+        let currentScreen = getCurrentScreen()
+        let windowSize = calculateOptimalWindowSize(for: currentScreen)
         let contentView = EmojiPickerView(
             windowSize: windowSize,
             onEmojiSelected: { [weak self] emoji in
@@ -75,18 +86,19 @@ class EmojiManager: ObservableObject {
         setupWindowObservers()
     }
 
-    private func calculateOptimalWindowSize() -> CGSize {
-        // Get screen where cursor is located
+    private func getCurrentScreen() -> NSScreen {
         let mouseLocation = NSEvent.mouseLocation
         let screens = NSScreen.screens
-        let currentScreen =
-            screens.first { screen in
-                NSPointInRect(mouseLocation, screen.frame)
-            } ?? NSScreen.main ?? screens.first!
+        return screens.first { screen in
+            NSPointInRect(mouseLocation, screen.frame)
+        } ?? NSScreen.main ?? screens.first!
+    }
 
-        // Calculate 30% of screen width
-        let screenWidth = currentScreen.frame.width
-        let pickerWidth = screenWidth * 0.3
+    private func calculateOptimalWindowSize(for screen: NSScreen) -> CGSize {
+        // Calculate width based on screen size
+        let screenWidth = screen.frame.width
+        let widthPercentage = screenWidth < 1800 ? 0.35 : 0.3
+        let pickerWidth = screenWidth * widthPercentage
 
         // Set height based on 3:2 aspect ratio (width:height)
         let pickerHeight = pickerWidth * (2.0 / 3.0)
@@ -97,17 +109,20 @@ class EmojiManager: ObservableObject {
     private func positionWindowAtCursor(_ window: NSWindow) {
         let mouseLocation = NSEvent.mouseLocation
         let windowFrame = window.frame
+        let currentScreen = getCurrentScreen()
 
         let newOrigin = CGPoint(
             x: mouseLocation.x - windowFrame.width / 2,
             y: mouseLocation.y - windowFrame.height / 2
         )
 
-        window.setFrameOrigin(constrainToScreen(point: newOrigin, windowSize: windowFrame.size))
+        window.setFrameOrigin(
+            constrainToScreen(point: newOrigin, windowSize: windowFrame.size, screen: currentScreen)
+        )
     }
 
-    private func constrainToScreen(point: CGPoint, windowSize: CGSize) -> CGPoint {
-        guard let screen = NSScreen.main else { return point }
+    private func constrainToScreen(point: CGPoint, windowSize: CGSize, screen: NSScreen) -> CGPoint
+    {
 
         let screenFrame = screen.visibleFrame
         var constrainedPoint = point
