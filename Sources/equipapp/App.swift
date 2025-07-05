@@ -53,9 +53,7 @@ struct EQuipApp: App {
     @MainActor
     private func logEmojiDataStats() {
         let dataManager = AppEmojiManager.shared
-        let allEmojis = dataManager.getAllEmojis()
-        let availableGroups = dataManager.getAvailableGroups()
-
-        // Statistics available for debugging if needed
+        let _ = dataManager.getAllEmojis()
+        let _ = dataManager.getAvailableGroups()
     }
 }

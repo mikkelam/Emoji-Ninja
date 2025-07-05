@@ -5,7 +5,7 @@ import equiplib
 @MainActor
 class EmojiPickerViewModel: ObservableObject {
     @Published var searchText = ""
-    @Published var selectedCategory: EmojiGroup?
+    @Published var selectedCategory: CategoryType?
     @Published var selectedEmojiIndex = 0
     @Published var currentSearchResults: [EmojibaseEmoji] = []
     @Published var searchResultsId = UUID()
@@ -105,10 +105,12 @@ class EmojiPickerViewModel: ObservableObject {
 
     private func getAllEmojis() -> [EmojibaseEmoji] {
         if !isInSearchMode {
-            let categories =
-                selectedCategory != nil ? [selectedCategory!] : EmojiGroup.availableGroups
-            let result = categories.flatMap { AppEmojiManager.shared.getEmojis(for: $0) }
-            return result
+            if let selectedCategory = selectedCategory {
+                return selectedCategory.getEmojis()
+            } else {
+                // Show all categories
+                return CategoryType.availableCategories.flatMap { $0.getEmojis() }
+            }
         } else {
             return currentSearchResults
         }

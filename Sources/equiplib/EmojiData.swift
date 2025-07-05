@@ -87,7 +87,7 @@ public enum EmojiGroup: Int, CaseIterable {
     public var name: String {
         switch self {
         case .smileysAndEmotion:
-            return "Smileys & People"
+            return "Smileys & Emotion"
         case .peopleAndBody:
             return "People & Body"
         case .component:

@@ -144,6 +144,7 @@ class EmojiManager: ObservableObject {
 
     private func handleEmojiSelection(_ emoji: String) {
         copyToClipboard(emoji)
+        FrequentlyUsedEmojiManager.shared.recordEmojiUsage(emoji)
         hidePicker()
         showBriefFeedback(emoji: emoji)
     }

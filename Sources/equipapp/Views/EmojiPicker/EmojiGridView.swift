@@ -4,7 +4,7 @@ import equiplib
 struct EmojiGridView: View {
     let geometry: GeometryProxy
     let selectedEmojiIndex: Int
-    let selectedCategory: EmojiGroup?
+    let selectedCategory: CategoryType?
     let onEmojiSelected: (String) -> Void
     @ObservedObject var emojiManager: EmojiManager
     @ObservedObject var viewModel: EmojiPickerViewModel
@@ -17,18 +17,19 @@ struct EmojiGridView: View {
     }
 
     private var emojiData:
-        [(category: EmojiGroup, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)])]
+        [(category: CategoryType, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)])]
     {
-        let allCategories = EmojiGroup.availableGroups
+        let allCategories = CategoryType.availableCategories
         let categories =
             viewModel.selectedCategory != nil ? [viewModel.selectedCategory!] : allCategories
 
         var globalIndex = 0
+
         let result = categories.compactMap {
             category -> (
-                category: EmojiGroup, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)]
+                category: CategoryType, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)]
             )? in
-            let emojis = AppEmojiManager.shared.getEmojis(for: category)
+            let emojis = category.getEmojis()
             guard !emojis.isEmpty else { return nil }
 
             let emojiIndices = emojis.map { emoji in
@@ -44,7 +45,7 @@ struct EmojiGridView: View {
     }
 
     var body: some View {
-        ForEach(emojiData, id: \.category.rawValue) { categoryData in
+        ForEach(emojiData, id: \.category) { categoryData in
             Section {
                 LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
                     ForEach(categoryData.emojiIndices, id: \.globalIndex) { emojiData in
@@ -56,14 +57,14 @@ struct EmojiGridView: View {
                             onEmojiSelected(emojiData.emoji.unicode)
                         }
                         .id(
-                            "emoji_\(emojiData.globalIndex)_\(viewModel.selectedCategory?.rawValue ?? -1)"
+                            "emoji_\(emojiData.globalIndex)_\(viewModel.selectedCategory?.hashValue ?? -1)"
                         )
                     }
                 }
-                .id("grid_\(categoryData.category.rawValue)_\(categoryData.emojiIndices.count)")
+                .id("grid_\(categoryData.category)_\(categoryData.emojiIndices.count)")
             } header: {
                 HStack {
-                    Text(categoryData.category.name)
+                    Text(categoryData.category.displayName)
                         .font(theme.typography.headline)
                         .foregroundColor(theme.colors.text.primary)
                     Spacer()
@@ -71,11 +72,11 @@ struct EmojiGridView: View {
                 .padding(.bottom, 2)
                 .padding(
                     .top,
-                    categoryData.category == EmojiGroup.availableGroups.first
+                    categoryData.category == CategoryType.availableCategories.first
                         ? 0 : theme.spacing.medium)
             }
-            .id(categoryData.category.rawValue)
+            .id(categoryData.category)
         }
-        .id("category_grid_\(viewModel.selectedCategory?.rawValue ?? -1)_\(emojiData.count)")
+        .id("category_grid_\(viewModel.selectedCategory?.hashValue ?? -1)_\(emojiData.count)")
     }
 }

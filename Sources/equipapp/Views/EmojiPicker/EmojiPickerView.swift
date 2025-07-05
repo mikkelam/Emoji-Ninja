@@ -68,7 +68,7 @@ struct EmojiPickerView: View {
                     .onChange(of: viewModel.selectedEmojiIndex) { _, newIndex in
                         withAnimation(.easeInOut(duration: 0.3)) {
                             proxy.scrollTo(
-                                "emoji_\(newIndex)_\(viewModel.selectedCategory?.rawValue ?? -1)",
+                                "emoji_\(newIndex)_\(viewModel.selectedCategory?.hashValue ?? -1)",
                                 anchor: .center)
                         }
                     }
@@ -77,7 +77,7 @@ struct EmojiPickerView: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 proxy.scrollTo(
-                                    "emoji_\(viewModel.selectedEmojiIndex)_\(viewModel.selectedCategory?.rawValue ?? -1)",
+                                    "emoji_\(viewModel.selectedEmojiIndex)_\(viewModel.selectedCategory?.hashValue ?? -1)",
                                     anchor: .center)
                             }
                         }
