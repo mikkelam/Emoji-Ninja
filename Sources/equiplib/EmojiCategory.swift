@@ -1,6 +1,6 @@
 import Foundation
 
-enum EmojiCategory: String, CaseIterable {
+public enum EmojiCategory: String, CaseIterable {
     case smileysAndEmotion = "smileysAndEmotion"
     case peopleAndBody = "peopleAndBody"
     case animalsAndNature = "animalsAndNature"
@@ -11,7 +11,7 @@ enum EmojiCategory: String, CaseIterable {
     case symbols = "symbols"
     case flags = "flags"
 
-    var name: String {
+    public var name: String {
         switch self {
         case .smileysAndEmotion:
             return "Smileys & Emotion"
@@ -34,7 +34,7 @@ enum EmojiCategory: String, CaseIterable {
         }
     }
 
-    var icon: String {
+    public var icon: String {
         switch self {
         case .smileysAndEmotion:
             return "😀"
@@ -57,7 +57,7 @@ enum EmojiCategory: String, CaseIterable {
         }
     }
 
-    var group: EmojiGroup {
+    public var group: EmojiGroup {
         switch self {
         case .smileysAndEmotion:
             return .smileysAndEmotion
@@ -106,22 +106,18 @@ extension EmojiCategory {
     func filteredEmojis(searchQuery: String) -> [EmojibaseEmoji] {
         guard !searchQuery.isEmpty else { return emojis }
 
-        let lowercaseQuery = searchQuery.lowercased()
-        return emojis.filter { emoji in
-            emoji.label.lowercased().contains(lowercaseQuery)
-                || emoji.tags?.contains { tag in
-                    tag.lowercased().contains(lowercaseQuery)
-                } == true
-                || emoji.emoticon?.values.contains { emoticon in
-                    emoticon.lowercased().contains(lowercaseQuery)
-                } == true
-        }
+        // Use the regular search which internally uses SearchKit when on MainActor
+        let allResults = EmojiDataManager.shared.searchEmojis(query: searchQuery)
+
+        // Filter to only include emojis from this category
+        let categoryEmojisSet = Set(emojis.map { $0.hexcode })
+        return allResults.filter { categoryEmojisSet.contains($0.hexcode) }
     }
 }
 
 // MARK: - Hashable conformance for SwiftUI
 extension EmojiCategory: Hashable {
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(rawValue)
     }
 }

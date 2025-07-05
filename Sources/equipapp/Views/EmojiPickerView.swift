@@ -1,4 +1,5 @@
 import SwiftUI
+import equiplib
 
 struct EmojiPickerView: View {
     let windowSize: CGSize
@@ -259,7 +260,8 @@ struct EmojiPickerView: View {
 
     private var searchResults: [EmojibaseEmoji] {
         guard !searchText.isEmpty else { return [] }
-        return EmojiCategory.searchEmojis(query: searchText)
+        // Use SearchKit for better performance and fuzzy matching
+        return AppEmojiManager.shared.searchEmojisWithSearchKit(query: searchText)
     }
 
     // MARK: - Helper Functions

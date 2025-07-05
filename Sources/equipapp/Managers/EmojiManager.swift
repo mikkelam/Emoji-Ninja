@@ -1,6 +1,7 @@
 import AppKit
 @preconcurrency import HotKey
 import SwiftUI
+import equiplib
 
 @MainActor
 class EmojiManager: ObservableObject {

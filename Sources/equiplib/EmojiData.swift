@@ -1,23 +1,21 @@
-import AppKit
-import CoreText
 import Foundation
 
 // MARK: - Emojibase Data Models
 
-struct EmojibaseEmoji: Codable {
-    let hexcode: String
-    let label: String
-    let unicode: String
-    let group: Int?
-    let order: Int?
-    let tags: [String]?
-    let emoticon: EmojibaseEmoticon?
+public struct EmojibaseEmoji: Codable {
+    public let hexcode: String
+    public let label: String
+    public let unicode: String
+    public let group: Int?
+    public let order: Int?
+    public let tags: [String]?
+    public let emoticon: EmojibaseEmoticon?
 
     enum CodingKeys: String, CodingKey {
         case hexcode, label, unicode, group, order, tags, emoticon
     }
 
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         hexcode = try container.decode(String.self, forKey: .hexcode)
@@ -37,7 +35,7 @@ struct EmojibaseEmoji: Codable {
         }
     }
 
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         try container.encode(hexcode, forKey: .hexcode)
@@ -58,7 +56,7 @@ struct EmojibaseEmoji: Codable {
     }
 }
 
-enum EmojibaseEmoticon: Codable {
+public enum EmojibaseEmoticon: Codable {
     case single(String)
     case multiple([String])
 
@@ -74,7 +72,7 @@ enum EmojibaseEmoticon: Codable {
 
 // MARK: - App's Emoji Categories (mapped from emojibase groups)
 
-enum EmojiGroup: Int, CaseIterable {
+public enum EmojiGroup: Int, CaseIterable {
     case smileysAndEmotion = 0
     case peopleAndBody = 1
     case animalsAndNature = 2
@@ -85,7 +83,7 @@ enum EmojiGroup: Int, CaseIterable {
     case symbols = 7
     case flags = 8
 
-    var name: String {
+    public var name: String {
         switch self {
         case .smileysAndEmotion:
             return "Smileys & Emotion"
@@ -108,7 +106,7 @@ enum EmojiGroup: Int, CaseIterable {
         }
     }
 
-    var icon: String {
+    public var icon: String {
         switch self {
         case .smileysAndEmotion:
             return "😀"
@@ -135,9 +133,6 @@ enum EmojiGroup: Int, CaseIterable {
 // MARK: - Emoji Font Support Checking
 
 extension EmojibaseEmoji {
-    var isSupported: Bool {
-        return EmojiSupportChecker.isSupported(self.unicode)
-    }
 
     var isUseful: Bool {
         // Filter out regional indicators (flag building blocks)
@@ -160,38 +155,10 @@ extension EmojibaseEmoji {
     }
 }
 
-struct EmojiSupportChecker {
-    nonisolated(unsafe) private static let cache = NSCache<NSString, NSNumber>()
-
-    static func isSupported(_ emoji: String) -> Bool {
-        let key = emoji as NSString
-
-        if let cached = cache.object(forKey: key) {
-            return cached.boolValue
-        }
-
-        let supported = checkEmojiSupport(emoji)
-        cache.setObject(NSNumber(value: supported), forKey: key)
-        return supported
-    }
-
-    private static func checkEmojiSupport(_ emoji: String) -> Bool {
-        // Simple visual bounds checking
-        let systemFont = NSFont.systemFont(ofSize: 16)
-        let attributes: [NSAttributedString.Key: Any] = [.font: systemFont]
-        let attributedString = NSAttributedString(string: emoji, attributes: attributes)
-
-        let size = attributedString.size()
-
-        // If emoji is supported, it should have reasonable dimensions
-        return size.width > 8 && size.height > 8
-    }
-}
-
 // MARK: - Emoji Data Manager
 
-class EmojiDataManager {
-    nonisolated(unsafe) static let shared = EmojiDataManager()
+public class EmojiDataManager {
+    nonisolated(unsafe) public static let shared = EmojiDataManager()
 
     private var allEmojis: [EmojibaseEmoji] = []
     private var supportedEmojis: [EmojibaseEmoji] = []
@@ -228,9 +195,9 @@ class EmojiDataManager {
             allEmojis = try JSONDecoder().decode([EmojibaseEmoji].self, from: data)
             print("✅ Loaded \(allEmojis.count) emojis")
 
-            // Filter supported and useful emojis
-            supportedEmojis = allEmojis.filter { $0.isSupported && $0.isUseful }
-            print("📱 \(supportedEmojis.count) useful emojis supported on this system")
+            // Filter useful emojis
+            supportedEmojis = allEmojis.filter { $0.isUseful }
+            print("📱 \(supportedEmojis.count) useful emojis loaded")
 
             // Group emojis by category
             groupEmojis()
@@ -248,15 +215,19 @@ class EmojiDataManager {
 
     // MARK: - Public API
 
-    func getAllEmojis() -> [EmojibaseEmoji] {
+    public func getAllEmojis() -> [EmojibaseEmoji] {
         return supportedEmojis
     }
 
-    func getEmojis(for group: EmojiGroup) -> [EmojibaseEmoji] {
+    func getSupportedEmojis() -> [EmojibaseEmoji] {
+        return supportedEmojis
+    }
+
+    public func getEmojis(for group: EmojiGroup) -> [EmojibaseEmoji] {
         return emojisByGroup[group.rawValue] ?? []
     }
 
-    func searchEmojis(query: String) -> [EmojibaseEmoji] {
+    public func searchEmojis(query: String) -> [EmojibaseEmoji] {
         guard !query.isEmpty else { return [] }
 
         let lowercaseQuery = query.lowercased()

@@ -1,6 +1,6 @@
 import Foundation
 
-enum SkinTone: String, CaseIterable, Identifiable {
+public enum SkinTone: String, CaseIterable, Identifiable {
     case `default` = "default"
     case light = "light"
     case mediumLight = "mediumLight"
@@ -8,9 +8,9 @@ enum SkinTone: String, CaseIterable, Identifiable {
     case mediumDark = "mediumDark"
     case dark = "dark"
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
-    var emoji: String {
+    public var emoji: String {
         switch self {
         case .default:
             return "👋"
@@ -27,7 +27,7 @@ enum SkinTone: String, CaseIterable, Identifiable {
         }
     }
 
-    var name: String {
+    public var name: String {
         switch self {
         case .default:
             return "Default"

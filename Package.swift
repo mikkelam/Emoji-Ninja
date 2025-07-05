@@ -8,18 +8,41 @@ let package = Package(
     platforms: [
         .macOS(.v14)
     ],
+    products: [
+        .library(
+            name: "equiplib",
+            targets: ["equiplib"]
+        ),
+        .executable(
+            name: "E-quip",
+            targets: ["equipapp"]
+        ),
+    ],
     dependencies: [
         .package(url: "https://github.com/soffes/HotKey", from: "0.2.0")
     ],
     targets: [
-        .executableTarget(
-            name: "E-quip",
+        .target(
+            name: "equiplib",
             dependencies: [
                 "HotKey"
             ],
+            path: "Sources/equiplib",
             resources: [
-                .process("Resources")
+                .process("../Resources")
             ]
-        )
+        ),
+        .executableTarget(
+            name: "equipapp",
+            dependencies: [
+                "equiplib",
+                "HotKey",
+            ],
+            path: "Sources/equipapp"
+        ),
+        .testTarget(
+            name: "E-quipTests",
+            dependencies: ["equiplib"]
+        ),
     ]
 )

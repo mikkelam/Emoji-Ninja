@@ -1,6 +1,7 @@
 import AppKit
 import ServiceManagement
 import SwiftUI
+import equiplib
 
 @main
 struct EQuipApp: App {
@@ -8,8 +9,7 @@ struct EQuipApp: App {
     @StateObject private var emojiManager = EmojiManager()
 
     init() {
-        // Run emoji data tests and validation on startup
-        runEmojiDataTests()
+        // Log emoji data stats on startup
         logEmojiDataStats()
     }
 
@@ -48,12 +48,8 @@ struct EQuipApp: App {
         .menuBarExtraStyle(.menu)
     }
 
-    private func runEmojiDataTests() {
-        EmojiDataTests.runAllTests()
-    }
-
     private func logEmojiDataStats() {
-        let dataManager = EmojiDataManager.shared
+        let dataManager = AppEmojiManager.shared
         let allEmojis = dataManager.getAllEmojis()
         let availableGroups = dataManager.getAvailableGroups()
 
