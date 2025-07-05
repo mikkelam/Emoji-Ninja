@@ -1,16 +1,18 @@
-# E-quip
+# E-quip ⚔️
 
-A lightweight macOS menu bar emoji picker with global hotkey support.
+Become quippest person in chat🤙
+
+A performant macOS emoji picker. No fuss, just find emojis. Fast.
+
+![Screenshot](demo/screenshot.png)
 
 ## Features
 
-- **Global Hotkey**: Quick access with `⌘⌃Space`
-- **Fast Search**: Type to filter emojis by name
+- **Fast Search**: Find your favorite emoji with ease
 - **Keyboard Navigation**: Arrow keys + Enter for selection
 - **Category Browsing**: Browse emojis by category
 - **Skin Tone Support**: Choose from different skin tones
-- **Launch at Login**: Optional auto-start
-- **Menu Bar Integration**: Clean, minimal interface
+- **Global Hotkey**: Quick access with `⌘⌃Space`
 
 ## Installation
 
@@ -26,6 +28,9 @@ build and run:
 - macOS 14.0+
 - Swift 6.0+
 
+# Development
+This project is Xcode free 🙂‍↕️
+
 ## Build Options
 
 The included build script supports various options:
@@ -37,9 +42,10 @@ Options:
   -r, --run         Run the app after building
   --release         Build in release mode
   --clean           Clean build artifacts before building
-  --app-bundle      Create a proper .app bundle
+  --app-bundle      Create a proper .app bundle (default with -r )
   -h, --help        Show help message
 ```
+
 
 ## License
 
