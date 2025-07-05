@@ -20,5 +20,7 @@
 	<array>
 		<string>com.mikkelam.e-quip</string>
 	</array>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>E-quip needs permission to send emojis to other applications.</string>
 </dict>
 </plist>

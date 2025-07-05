@@ -13,6 +13,7 @@ class EmojiManager: ObservableObject {
     private var pickerWindow: NSWindow?
     private nonisolated(unsafe) var showPickerHotKey: HotKey?
     private nonisolated(unsafe) var themeObserver: AnyCancellable?
+    private var previousApp: NSRunningApplication?
 
     init() {
         setupHotKey()
@@ -20,6 +21,9 @@ class EmojiManager: ObservableObject {
     }
 
     func showPicker() {
+        // Store the currently focused app before showing picker
+        previousApp = NSWorkspace.shared.frontmostApplication
+
         if pickerWindow == nil {
             createPickerWindow()
         }
@@ -143,10 +147,67 @@ class EmojiManager: ObservableObject {
     }
 
     private func handleEmojiSelection(_ emoji: String) {
-        copyToClipboard(emoji)
         FrequentlyUsedEmojiManager.shared.recordEmojiUsage(emoji)
         hidePicker()
+
+        // Brief delay to allow focus to return to previous app
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.typeEmojiDirectly(emoji)
+        }
+
         showBriefFeedback(emoji: emoji)
+    }
+
+    private func typeEmojiDirectly(_ emoji: String) {
+        // Check if we have accessibility permissions
+        if !AXIsProcessTrusted() {
+            print("❌ No accessibility permissions. Cannot type emoji.")
+            copyToClipboard(emoji)
+            return
+        }
+
+        // Restore focus to previous app first
+        if let app = previousApp {
+            app.activate(options: [])
+            print("🔄 Restored focus to \(app.localizedName ?? "Unknown")")
+        }
+
+        self.typeUnicodeDirectly(emoji)
+
+    }
+
+    private func typeUnicodeDirectly(_ emoji: String) {
+        guard let source = CGEventSource(stateID: .hidSystemState) else {
+            print("❌ Failed to create CGEventSource")
+            return
+        }
+
+        // Convert emoji to UTF-16 and type it directly
+        let utf16 = Array(emoji.utf16)
+
+        if let event = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true) {
+            event.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: utf16)
+            event.post(tap: .cgSessionEventTap)
+        }
+
+        print("⌨️ Typed emoji directly: \(emoji)")
+    }
+
+    private func promptForAccessibilityPermissions() {
+        let alert = NSAlert()
+        alert.messageText = "Accessibility Permission Required"
+        alert.informativeText =
+            "E-quip needs accessibility permissions to type emojis directly into other apps. Please enable it in System Settings > Privacy & Security > Accessibility."
+        alert.addButton(withTitle: "Open System Settings")
+        alert.addButton(withTitle: "Cancel")
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            NSWorkspace.shared.open(
+                URL(
+                    string:
+                        "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+                )!)
+        }
     }
 
     private func copyToClipboard(_ emoji: String) {
