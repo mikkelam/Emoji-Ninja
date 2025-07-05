@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>E-quip</string>
+	<key>CFBundleExecutable</key>
+	<string>E-quip</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.mikkelam.e-quip</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>E-quip</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>SMAuthorizedClients</key>
+	<array>
+		<string>com.mikkelam.e-quip</string>
+	</array>
+</dict>
+</plist>

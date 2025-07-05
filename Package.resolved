@@ -1,0 +1,24 @@
+{
+  "originHash" : "b040e6cccc598f96fb943e7a4c2909a61db0be8c0e64751896c7f49c41c6c172",
+  "pins" : [
+    {
+      "identity" : "emojikit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/danielsaidi/EmojiKit",
+      "state" : {
+        "revision" : "1942584604266243e0b0a075f73419fbefa8ed38",
+        "version" : "1.7.4"
+      }
+    },
+    {
+      "identity" : "hotkey",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/soffes/HotKey",
+      "state" : {
+        "revision" : "a3cf605d7a96f6ff50e04fcb6dea6e2613cfcbe4",
+        "version" : "0.2.1"
+      }
+    }
+  ],
+  "version" : 3
+}
