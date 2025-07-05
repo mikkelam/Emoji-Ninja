@@ -48,16 +48,16 @@ struct EmojiGridView: View {
         ForEach(emojiData, id: \.category) { categoryData in
             Section {
                 LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
-                    ForEach(categoryData.emojiIndices, id: \.globalIndex) { emojiData in
+                    ForEach(categoryData.emojiIndices, id: \.globalIndex) { emojiIndexData in
                         EmojiButton(
-                            emoji: emojiData.emoji.unicode,
-                            isSelected: emojiData.globalIndex == selectedEmojiIndex,
+                            emojiData: emojiIndexData.emoji,
+                            isSelected: emojiIndexData.globalIndex == selectedEmojiIndex,
                             geometry: geometry
                         ) {
-                            onEmojiSelected(emojiData.emoji.unicode)
+                            onEmojiSelected(emojiIndexData.emoji.unicode)
                         }
                         .id(
-                            "emoji_\(emojiData.globalIndex)_\(viewModel.selectedCategory?.hashValue ?? -1)"
+                            "emoji_\(emojiIndexData.globalIndex)_\(viewModel.selectedCategory?.hashValue ?? -1)"
                         )
                     }
                 }

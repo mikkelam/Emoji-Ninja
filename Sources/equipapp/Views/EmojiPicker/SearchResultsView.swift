@@ -36,7 +36,7 @@ struct SearchResultsView: View {
                     ForEach(Array(searchResults.enumerated()), id: \.element.unicode) {
                         index, emoji in
                         EmojiButton(
-                            emoji: emoji.unicode,
+                            emojiData: emoji,
                             isSelected: index == selectedEmojiIndex,
                             geometry: geometry
                         ) {

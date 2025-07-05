@@ -2,17 +2,17 @@ import SwiftUI
 import equiplib
 
 struct EmojiButton: View {
-    let emoji: String
+    let emojiData: EmojibaseEmoji
     let action: () -> Void
     let isSelected: Bool
     let geometry: GeometryProxy
     @Environment(\.theme) private var theme
 
     init(
-        emoji: String, isSelected: Bool = false, geometry: GeometryProxy,
+        emojiData: EmojibaseEmoji, isSelected: Bool = false, geometry: GeometryProxy,
         action: @escaping () -> Void
     ) {
-        self.emoji = emoji
+        self.emojiData = emojiData
         self.isSelected = isSelected
         self.geometry = geometry
         self.action = action
@@ -26,7 +26,7 @@ struct EmojiButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(emoji)
+            Text(emojiData.unicode)
         }
         .emojiButtonStyle(isSelected: isSelected, isHovered: isHovered, size: buttonSize)
         .onHover { hovering in
@@ -37,5 +37,6 @@ struct EmojiButton: View {
                 NSCursor.pop()
             }
         }
+        .help(emojiData.label)
     }
 }
