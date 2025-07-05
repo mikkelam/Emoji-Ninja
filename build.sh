@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 BUILD_TYPE="debug"
 RUN_AFTER_BUILD=false
 CLEAN_BUILD=false
-CREATE_APP_BUNDLE=false
+CREATE_APP_BUNDLE=true
 APP_NAME="Emoji Ninja"
 
 # Function to print usage
@@ -24,7 +24,7 @@ usage() {
     echo "  -r, --run         Run the app after building"
     echo "  --release         Build in release mode"
     echo "  --clean           Clean build artifacts before building"
-    echo "  --app-bundle      Create a proper .app bundle"
+
     echo "  -h, --help        Show this help message"
 }
 
@@ -43,10 +43,7 @@ while [[ $# -gt 0 ]]; do
             CLEAN_BUILD=true
             shift
             ;;
-        --app-bundle)
-            CREATE_APP_BUNDLE=true
-            shift
-            ;;
+
         -h|--help)
             usage
             exit 0
@@ -86,8 +83,7 @@ if [ "$RUN_AFTER_BUILD" = true ]; then
     pkill -f ".build/release/$APP_NAME" || true
     sleep 0.5
 
-    echo -e "${YELLOW}📱 Creating app bundle for proper GUI support...${NC}"
-    CREATE_APP_BUNDLE=true
+    echo -e "${YELLOW}📱 Running app...${NC}"
 fi
 
 # Show executable path
@@ -97,47 +93,45 @@ else
     EXECUTABLE_PATH=".build/debug/$APP_NAME"
 fi
 
-# Create app bundle if requested
-if [ "$CREATE_APP_BUNDLE" = true ]; then
-    echo -e "${YELLOW}📱 Creating app bundle...${NC}"
+# Create app bundle
+echo -e "${YELLOW}📱 Creating app bundle...${NC}"
 
-    APP_DIR=".build/$APP_NAME.app"
-    CONTENTS_DIR="$APP_DIR/Contents"
-    MACOS_DIR="$CONTENTS_DIR/MacOS"
-    RESOURCES_DIR="$CONTENTS_DIR/Resources"
+APP_DIR=".build/$APP_NAME.app"
+CONTENTS_DIR="$APP_DIR/Contents"
+MACOS_DIR="$CONTENTS_DIR/MacOS"
+RESOURCES_DIR="$CONTENTS_DIR/Resources"
 
-    # Clean previous bundle
-    rm -rf "$APP_DIR"
+# Clean previous bundle
+rm -rf "$APP_DIR"
 
-    # Create directory structure
-    mkdir -p "$MACOS_DIR"
-    mkdir -p "$RESOURCES_DIR"
+# Create directory structure
+mkdir -p "$MACOS_DIR"
+mkdir -p "$RESOURCES_DIR"
 
-    # Copy executable
-    cp "$EXECUTABLE_PATH" "$MACOS_DIR/$APP_NAME"
-    chmod +x "$MACOS_DIR/$APP_NAME"
+# Copy executable
+cp "$EXECUTABLE_PATH" "$MACOS_DIR/$APP_NAME"
+chmod +x "$MACOS_DIR/$APP_NAME"
 
-    # Copy Info.plist
-    cp "Info.plist" "$CONTENTS_DIR/Info.plist"
+# Copy Info.plist
+cp "BuildResources/Info.plist" "$CONTENTS_DIR/Info.plist"
 
-    # Copy and convert ninja.png to icns if it exists
-    if [ -f "ninja.png" ]; then
-        echo -e "${YELLOW}🔍 Found ninja.png, copying${NC}"
-        cp "ninja.png" "$RESOURCES_DIR/ninja.png"
-    else
-        echo -e "${RED}❌ ninja.png not found${NC}"
-    fi
-
-    echo -e "${GREEN}✅ App bundle created at: $APP_DIR${NC}"
-    echo -e "${GREEN}💡 You can now run: open $APP_DIR${NC}"
-
-    EXECUTABLE_PATH="$APP_DIR"
+# Copy and convert ninja.png to icns if it exists
+if [ -f "BuildResources/ninja.png" ]; then
+    echo -e "${YELLOW}🔍 Found ninja.png, copying${NC}"
+    cp "BuildResources/ninja.png" "$RESOURCES_DIR/ninja.png"
+else
+    echo -e "${RED}❌ ninja.png not found${NC}"
 fi
+
+echo -e "${GREEN}✅ App bundle created at: $APP_DIR${NC}"
+echo -e "${GREEN}💡 You can now run: open $APP_DIR${NC}"
+
+EXECUTABLE_PATH="$APP_DIR"
 
 echo -e "${GREEN}📦 Executable built at: ${EXECUTABLE_PATH}${NC}"
 
 # Auto-run the app bundle if requested
-if [ "$RUN_AFTER_BUILD" = true ] && [ "$CREATE_APP_BUNDLE" = true ]; then
+if [ "$RUN_AFTER_BUILD" = true ]; then
     echo -e "${GREEN}🏃 Launching Emoji Ninja with logs...${NC}"
     "$APP_DIR/Contents/MacOS/$APP_NAME"
 fi

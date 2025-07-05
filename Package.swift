@@ -29,7 +29,7 @@ let package = Package(
             ],
             path: "Sources/ninjalib",
             resources: [
-                .process("../Resources")
+                .copy("../Resources/emoji_data.json")
             ]
         ),
         .executableTarget(
