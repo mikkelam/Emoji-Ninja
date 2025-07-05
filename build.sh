@@ -130,8 +130,8 @@ echo -e "${GREEN}📦 Executable built at: ${EXECUTABLE_PATH}${NC}"
 
 # Auto-run the app bundle if requested
 if [ "$RUN_AFTER_BUILD" = true ] && [ "$CREATE_APP_BUNDLE" = true ]; then
-    echo -e "${YELLOW}🏃 Launching E-quip...${NC}"
-    open "$EXECUTABLE_PATH"
+    echo -e "${YELLOW}🏃 Launching E-quip with logs...${NC}"
+    "$APP_DIR/Contents/MacOS/$APP_NAME"
 fi
 
 echo -e "${GREEN}💡 Tip: Use './build.sh --run' to build and run immediately${NC}"

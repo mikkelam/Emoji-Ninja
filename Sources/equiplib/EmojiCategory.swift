@@ -99,15 +99,17 @@ extension EmojiCategory {
         return allCases.filter { !$0.emojis.isEmpty }
     }
 
+    @MainActor
     static func searchEmojis(query: String) -> [EmojibaseEmoji] {
-        return EmojiDataManager.shared.searchEmojis(query: query)
+        return EmojiDataManager.shared.searchEmojisWithSearchKit(query: query)
     }
 
+    @MainActor
     func filteredEmojis(searchQuery: String) -> [EmojibaseEmoji] {
         guard !searchQuery.isEmpty else { return emojis }
 
-        // Use the regular search which internally uses SearchKit when on MainActor
-        let allResults = EmojiDataManager.shared.searchEmojis(query: searchQuery)
+        // Use SearchKit for searching
+        let allResults = EmojiDataManager.shared.searchEmojisWithSearchKit(query: searchQuery)
 
         // Filter to only include emojis from this category
         let categoryEmojisSet = Set(emojis.map { $0.hexcode })

@@ -48,6 +48,7 @@ struct EQuipApp: App {
         .menuBarExtraStyle(.menu)
     }
 
+    @MainActor
     private func logEmojiDataStats() {
         let dataManager = AppEmojiManager.shared
         let allEmojis = dataManager.getAllEmojis()
@@ -58,24 +59,5 @@ struct EQuipApp: App {
         print("📦 Total supported emojis: \(allEmojis.count)")
         print("📁 Available categories: \(availableGroups.count)")
         print("")
-
-        // Log detailed category counts
-        for group in availableGroups {
-            let groupEmojis = dataManager.getEmojis(for: group)
-            print("  \(group.icon) \(group.name): \(groupEmojis.count) emojis")
-        }
-
-        print("")
-        print("🔍 Sample search results:")
-
-        // Test common searches
-        let commonSearches = ["smile", "heart", "fire", "party"]
-        for query in commonSearches {
-            let results = dataManager.searchEmojis(query: query)
-            print("  '\(query)': \(results.count) results")
-        }
-
-        print(String(repeating: "=", count: 40))
-        print("🎉 E-quip ready with \(allEmojis.count) emojis!")
     }
 }

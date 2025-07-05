@@ -119,17 +119,25 @@ public class EmojiSearchKit {
         // First try exact search
         var results = performSearch(query: query, index: index, limit: limit)
 
-        // If no results, try with wildcards for fuzzy matching
-        if results.isEmpty && query.count >= 3 {
+        // For better substring matching, always try wildcard searches
+        if query.count >= 2 {
             // Try prefix matching
             let prefixQuery = "\(query)*"
-            results = performSearch(query: prefixQuery, index: index, limit: limit)
+            let prefixResults = performSearch(query: prefixQuery, index: index, limit: limit)
+            results = mergeResults(results, prefixResults)
 
-            // If still no results, try each word with wildcards
-            if results.isEmpty {
+            // Try substring matching with wildcards around the query
+            let substringQuery = "*\(query)*"
+            let substringResults = performSearch(query: substringQuery, index: index, limit: limit)
+            results = mergeResults(results, substringResults)
+
+            // If still limited results, try each word with wildcards
+            if results.count < limit / 2 {
                 let words = query.split(separator: " ").map(String.init)
                 let wildcardQuery = words.map { "*\($0)*" }.joined(separator: " ")
-                results = performSearch(query: wildcardQuery, index: index, limit: limit)
+                let wildcardResults = performSearch(
+                    query: wildcardQuery, index: index, limit: limit)
+                results = mergeResults(results, wildcardResults)
             }
         }
 
@@ -198,6 +206,19 @@ public class EmojiSearchKit {
     }
 
     // MARK: - Helper Methods
+
+    private func mergeResults(_ existing: [SearchResult], _ new: [SearchResult]) -> [SearchResult] {
+        var merged = existing
+        let existingHexcodes = Set(existing.map { $0.emoji.hexcode })
+
+        for result in new {
+            if !existingHexcodes.contains(result.emoji.hexcode) {
+                merged.append(result)
+            }
+        }
+
+        return merged
+    }
 
     private func extractMatchedTerms(query: String, emoji: EmojibaseEmoji) -> [String] {
         let queryTerms = query.lowercased().split(separator: " ").map(String.init)
@@ -327,11 +348,38 @@ extension EmojiDataManager {
         return searchKitInstance!
     }
 
-    /// Enhanced search using SearchKit
+    /// Enhanced search using SearchKit with fallback to manual substring search
     @MainActor
     public func searchEmojisWithSearchKit(query: String) -> [EmojibaseEmoji] {
-        let results = Self.searchKit.search(query: query)
-        return results.map { $0.emoji }
+        guard !query.isEmpty else { return [] }
+
+        let searchKitResults = Self.searchKit.search(query: query)
+        var results = searchKitResults.map { $0.emoji }
+
+        // Always supplement with manual substring search to ensure comprehensive results
+        let allEmojis = getAllEmojis()
+        let lowercaseQuery = query.lowercased()
+
+        let additionalResults = allEmojis.filter { emoji in
+            // Skip if already found by SearchKit
+            if results.contains(where: { $0.hexcode == emoji.hexcode }) {
+                return false
+            }
+
+            // Check if query matches label or any tag as substring
+            let labelMatch = emoji.label.lowercased().contains(lowercaseQuery)
+            let tagMatch =
+                emoji.tags?.contains { tag in
+                    tag.lowercased().contains(lowercaseQuery)
+                } ?? false
+
+            return labelMatch || tagMatch
+        }
+
+        results.append(contentsOf: additionalResults)
+
+        // Limit total results for performance (SearchKit results first, then substring matches)
+        return Array(results.prefix(100))
     }
 
 }

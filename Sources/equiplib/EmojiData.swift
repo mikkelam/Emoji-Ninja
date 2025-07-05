@@ -227,25 +227,6 @@ public class EmojiDataManager {
         return emojisByGroup[group.rawValue] ?? []
     }
 
-    public func searchEmojis(query: String) -> [EmojibaseEmoji] {
-        guard !query.isEmpty else { return [] }
-
-        let lowercaseQuery = query.lowercased()
-
-        return supportedEmojis.filter { emoji in
-            // Search in label
-            emoji.label.lowercased().contains(lowercaseQuery)
-                // Search in tags
-                || emoji.tags?.contains { tag in
-                    tag.lowercased().contains(lowercaseQuery)
-                } == true
-                // Search in emoticons
-                || emoji.emoticon?.values.contains { emoticon in
-                    emoticon.lowercased().contains(lowercaseQuery)
-                } == true
-        }
-    }
-
     func getAvailableGroups() -> [EmojiGroup] {
         return EmojiGroup.allCases.filter { group in
             !getEmojis(for: group).isEmpty

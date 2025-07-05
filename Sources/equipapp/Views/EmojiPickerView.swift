@@ -10,6 +10,8 @@ struct EmojiPickerView: View {
     @State private var selectedCategory: EmojiCategory?
     @State private var selectedEmojiIndex: Int = 0
     @FocusState private var isSearchFocused: Bool
+    @State private var currentSearchResults: [EmojibaseEmoji] = []
+    @State private var searchResultsId = UUID()
 
     private var adaptiveColumns: [GridItem] {
         Array(repeating: GridItem(.adaptive(minimum: 60, maximum: 120), spacing: 8), count: 8)
@@ -60,14 +62,18 @@ struct EmojiPickerView: View {
             }
             selectedEmojiIndex = 0
             searchText = ""
+            updateSearchResults()
         }
         .onChange(of: searchText) { _, _ in
             selectedEmojiIndex = 0
+            updateSearchResults()
+            searchResultsId = UUID()
         }
         .onChange(of: emojiManager.shouldResetSearch) { _, shouldReset in
             if shouldReset {
                 searchText = ""
                 selectedEmojiIndex = 0
+                updateSearchResults()
                 emojiManager.shouldResetSearch = false
             }
         }
@@ -75,6 +81,7 @@ struct EmojiPickerView: View {
             _ in
             searchText = ""
             selectedEmojiIndex = 0
+            updateSearchResults()
             DispatchQueue.main.async {
                 isSearchFocused = true
             }
@@ -152,8 +159,6 @@ struct EmojiPickerView: View {
             .frame(height: 60)
             .background(Color.secondary.opacity(0.1))
         }
-        // .padding(.horizontal, 4)
-        // .padding(.vertical, 2)
     }
 
     // MARK: - Category Filter
@@ -215,7 +220,7 @@ struct EmojiPickerView: View {
     // MARK: - Search Results
     private func searchResultsView(geometry: GeometryProxy) -> some View {
         Group {
-            if searchResults.isEmpty {
+            if currentSearchResults.isEmpty {
                 VStack(spacing: 12) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 48))
@@ -233,7 +238,7 @@ struct EmojiPickerView: View {
                 .padding()
             } else {
                 LazyVGrid(columns: adaptiveColumns, spacing: 8) {
-                    ForEach(Array(searchResults.enumerated()), id: \.element.unicode) {
+                    ForEach(Array(currentSearchResults.enumerated()), id: \.element.unicode) {
                         index, emoji in
                         EmojiButton(
                             emoji: emoji.unicode,
@@ -242,9 +247,10 @@ struct EmojiPickerView: View {
                         ) {
                             onEmojiSelected(emoji.unicode)
                         }
-                        .id("emoji_\(index)")
+                        .id("emoji_\(index)_\(searchResultsId)")
                     }
                 }
+                .id("search_grid_\(searchResultsId)")
             }
         }
     }
@@ -258,13 +264,16 @@ struct EmojiPickerView: View {
         }
     }
 
-    private var searchResults: [EmojibaseEmoji] {
-        guard !searchText.isEmpty else { return [] }
-        // Use SearchKit for better performance and fuzzy matching
-        return AppEmojiManager.shared.searchEmojisWithSearchKit(query: searchText)
-    }
-
     // MARK: - Helper Functions
+
+    private func updateSearchResults() {
+        if searchText.isEmpty {
+            currentSearchResults = []
+        } else {
+            let newResults = AppEmojiManager.shared.searchEmojisWithSearchKit(query: searchText)
+            currentSearchResults = newResults
+        }
+    }
 
     private struct EmojiWithIndex {
         let emoji: EmojibaseEmoji
@@ -290,9 +299,12 @@ struct EmojiPickerView: View {
 
     private func getAllEmojis() -> [EmojibaseEmoji] {
         if searchText.isEmpty {
-            return visibleCategories.flatMap { $0.emojis }
+            let categoryEmojis = visibleCategories.flatMap { $0.emojis }
+
+            return categoryEmojis
         } else {
-            return searchResults
+
+            return currentSearchResults
         }
     }
 
@@ -422,14 +434,4 @@ struct EmojiButton: View {
     private var backgroundColor: Color {
         return Color(red: 35 / 255, green: 35 / 255, blue: 35 / 255)
     }
-}
-
-// MARK: - Preview
-#Preview {
-    EmojiPickerView(
-        windowSize: CGSize(width: 600, height: 400),
-        onEmojiSelected: { emoji in
-            print("Selected emoji: \(emoji)")
-        },
-        emojiManager: EmojiManager())
 }

@@ -21,7 +21,7 @@ extension EmojiCategory {
     /// Search emojis with platform support filtering
     @MainActor
     static func searchEmojis(query: String) -> [EmojibaseEmoji] {
-        return AppEmojiManager.shared.searchEmojis(query: query)
+        return AppEmojiManager.shared.searchEmojisWithSearchKit(query: query)
     }
 
     /// Filter emojis within this category by search query
@@ -29,8 +29,8 @@ extension EmojiCategory {
     func filteredEmojis(searchQuery: String) -> [EmojibaseEmoji] {
         guard !searchQuery.isEmpty else { return emojis }
 
-        // Use AppEmojiManager's search and filter to only include emojis from this category
-        let allResults = AppEmojiManager.shared.searchEmojis(query: searchQuery)
+        // Use AppEmojiManager's SearchKit search and filter to only include emojis from this category
+        let allResults = AppEmojiManager.shared.searchEmojisWithSearchKit(query: searchQuery)
         let categoryEmojisSet = Set(emojis.map { $0.hexcode })
         return allResults.filter { categoryEmojisSet.contains($0.hexcode) }
     }
