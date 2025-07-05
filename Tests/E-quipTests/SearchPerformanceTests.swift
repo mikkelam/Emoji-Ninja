@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import equiplib
+@testable import ninjalib
 
 @MainActor
 final class SearchPerformanceTests: XCTestCase {

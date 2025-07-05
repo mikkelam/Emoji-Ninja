@@ -2,7 +2,7 @@ import AppKit
 @preconcurrency import Combine
 @preconcurrency import HotKey
 import SwiftUI
-import equiplib
+import ninjalib
 
 @MainActor
 class EmojiManager: ObservableObject {
@@ -78,7 +78,7 @@ class EmojiManager: ObservableObject {
             defer: false
         )
 
-        pickerWindow?.title = "E-quip"
+        pickerWindow?.title = "Emoji Ninja"
         pickerWindow?.contentView = NSHostingView(rootView: contentView)
         pickerWindow?.level = .floating
         pickerWindow?.isReleasedWhenClosed = false
@@ -212,7 +212,7 @@ class EmojiManager: ObservableObject {
         let alert = NSAlert()
         alert.messageText = "Accessibility Permission Required"
         alert.informativeText =
-            "E-quip needs accessibility permissions to type emojis directly into other apps. Please enable it in System Settings > Privacy & Security > Accessibility."
+            "Emoji Ninja needs accessibility permissions to type emojis directly into other apps. Please enable it in System Settings > Privacy & Security > Accessibility."
         alert.addButton(withTitle: "Open System Settings")
         alert.addButton(withTitle: "Cancel")
 

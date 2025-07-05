@@ -1,7 +1,7 @@
 import AppKit
 import XCTest
 
-@testable import equiplib
+@testable import ninjalib
 
 final class CowboyEmojiTest: XCTestCase {
 

@@ -1,5 +1,5 @@
 import SwiftUI
-import equiplib
+import ninjalib
 
 struct CategoryFilterView: View {
     @Binding var selectedCategory: CategoryType?

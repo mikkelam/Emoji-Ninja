@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import equiplib
+@testable import ninjalib
 
 final class EmojiDataTests: XCTestCase {
     // MARK: - Data Loading Tests

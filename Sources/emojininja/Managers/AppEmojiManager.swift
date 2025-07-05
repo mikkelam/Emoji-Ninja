@@ -1,5 +1,5 @@
 import Foundation
-import equiplib
+import ninjalib
 
 /// App-level emoji manager that adds platform-specific filtering
 @MainActor

@@ -1,6 +1,6 @@
 import Combine
 import SwiftUI
-import equiplib
+import ninjalib
 
 @MainActor
 class EmojiPickerViewModel: ObservableObject {

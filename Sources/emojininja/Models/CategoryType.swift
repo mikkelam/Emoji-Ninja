@@ -1,5 +1,5 @@
 import Foundation
-import equiplib
+import ninjalib
 
 /// Special category types that extend beyond regular EmojiGroup categories
 @MainActor

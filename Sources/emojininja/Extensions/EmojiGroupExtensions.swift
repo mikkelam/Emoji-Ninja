@@ -1,5 +1,5 @@
 import Foundation
-import equiplib
+import ninjalib
 
 // MARK: - App-specific EmojiGroup Extensions
 

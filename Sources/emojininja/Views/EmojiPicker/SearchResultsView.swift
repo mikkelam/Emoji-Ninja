@@ -1,5 +1,5 @@
 import SwiftUI
-import equiplib
+import ninjalib
 
 struct SearchResultsView: View {
     let geometry: GeometryProxy

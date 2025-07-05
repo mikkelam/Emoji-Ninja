@@ -1,10 +1,10 @@
 import AppKit
 import ServiceManagement
 import SwiftUI
-import equiplib
+import ninjalib
 
 @main
-struct EQuipApp: App {
+struct EmojiNinjaApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var emojiManager = EmojiManager()
     @StateObject private var themeManager = ThemeManager.shared
@@ -18,7 +18,7 @@ struct EQuipApp: App {
         let image = NSImage(size: NSSize(width: 18, height: 18))
         image.lockFocus()
 
-        let emoji = "⚔️"
+        let emoji = "🥷"
         let font = NSFont.systemFont(ofSize: 16)
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,

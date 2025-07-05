@@ -3,24 +3,26 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>E-quip</string>
+	<string>Emoji Ninja</string>
 	<key>CFBundleExecutable</key>
-	<string>E-quip</string>
+	<string>Emoji Ninja</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.mikkelam.e-quip</string>
+	<string>com.mikkelam.emoji-ninja</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>E-quip</string>
+	<string>Emoji Ninja</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>LSUIElement</key>
 	<true/>
 	<key>SMAuthorizedClients</key>
 	<array>
-		<string>com.mikkelam.e-quip</string>
+		<string>com.mikkelam.emoji-ninja</string>
 	</array>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>E-quip needs permission to send emojis to other applications.</string>
+	<string>Emoji Ninja needs permission to send emojis to other applications.</string>
 </dict>
 </plist>

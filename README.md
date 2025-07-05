@@ -1,6 +1,6 @@
-# E-quip ⚔️
+# Emoji Ninja 🥷
 
-Become quippest person in chat🤙
+Become the emoji master in any chat🤙
 
 A performant macOS emoji picker. No fuss, just find emojis. Fast.
 

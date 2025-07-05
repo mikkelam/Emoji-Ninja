@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# E-quip Build Script
+# Emoji Ninja Build Script
 
 set -e
 
@@ -15,6 +15,7 @@ BUILD_TYPE="debug"
 RUN_AFTER_BUILD=false
 CLEAN_BUILD=false
 CREATE_APP_BUNDLE=false
+APP_NAME="Emoji Ninja"
 
 # Function to print usage
 usage() {
@@ -58,7 +59,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo -e "${GREEN}🚀 E-quip Build Script${NC}"
+echo -e "${GREEN}🚀 Emoji Ninja Build Script${NC}"
 echo "Build type: $BUILD_TYPE"
 
 # Clean if requested
@@ -68,7 +69,7 @@ if [ "$CLEAN_BUILD" = true ]; then
 fi
 
 # Build
-echo -e "${YELLOW}🔨 Building E-quip...${NC}"
+echo -e "${GREEN}🔨 Building Emoji Ninja...${NC}"
 if [ "$BUILD_TYPE" = "release" ]; then
     swift build -c release
 else
@@ -80,9 +81,9 @@ echo -e "${GREEN}✅ Build completed successfully!${NC}"
 # Run if requested
 if [ "$RUN_AFTER_BUILD" = true ]; then
     echo -e "${YELLOW}🔪 Killing existing instances...${NC}"
-    pkill -f "E-quip" || true
-    pkill -f ".build/debug/E-quip" || true
-    pkill -f ".build/release/E-quip" || true
+    pkill -f $APP_NAME || true
+    pkill -f ".build/debug/$APP_NAME" || true
+    pkill -f ".build/release/$APP_NAME" || true
     sleep 0.5
 
     echo -e "${YELLOW}📱 Creating app bundle for proper GUI support...${NC}"
@@ -91,16 +92,15 @@ fi
 
 # Show executable path
 if [ "$BUILD_TYPE" = "release" ]; then
-    EXECUTABLE_PATH=".build/release/E-quip"
+    EXECUTABLE_PATH=".build/release/$APP_NAME"
 else
-    EXECUTABLE_PATH=".build/debug/E-quip"
+    EXECUTABLE_PATH=".build/debug/$APP_NAME"
 fi
 
 # Create app bundle if requested
 if [ "$CREATE_APP_BUNDLE" = true ]; then
     echo -e "${YELLOW}📱 Creating app bundle...${NC}"
 
-    APP_NAME="E-quip"
     APP_DIR=".build/$APP_NAME.app"
     CONTENTS_DIR="$APP_DIR/Contents"
     MACOS_DIR="$CONTENTS_DIR/MacOS"
@@ -120,6 +120,14 @@ if [ "$CREATE_APP_BUNDLE" = true ]; then
     # Copy Info.plist
     cp "Info.plist" "$CONTENTS_DIR/Info.plist"
 
+    # Copy and convert ninja.png to icns if it exists
+    if [ -f "ninja.png" ]; then
+        echo -e "${YELLOW}🔍 Found ninja.png, copying${NC}"
+        cp "ninja.png" "$RESOURCES_DIR/ninja.png"
+    else
+        echo -e "${RED}❌ ninja.png not found${NC}"
+    fi
+
     echo -e "${GREEN}✅ App bundle created at: $APP_DIR${NC}"
     echo -e "${GREEN}💡 You can now run: open $APP_DIR${NC}"
 
@@ -130,7 +138,7 @@ echo -e "${GREEN}📦 Executable built at: ${EXECUTABLE_PATH}${NC}"
 
 # Auto-run the app bundle if requested
 if [ "$RUN_AFTER_BUILD" = true ] && [ "$CREATE_APP_BUNDLE" = true ]; then
-    echo -e "${YELLOW}🏃 Launching E-quip with logs...${NC}"
+    echo -e "${GREEN}🏃 Launching Emoji Ninja with logs...${NC}"
     "$APP_DIR/Contents/MacOS/$APP_NAME"
 fi
 

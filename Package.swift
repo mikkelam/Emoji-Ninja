@@ -4,18 +4,18 @@
 import PackageDescription
 
 let package = Package(
-    name: "E-quip",
+    name: "Emoji Ninja",
     platforms: [
         .macOS(.v14)
     ],
     products: [
         .library(
-            name: "equiplib",
-            targets: ["equiplib"]
+            name: "ninjalib",
+            targets: ["ninjalib"]
         ),
         .executable(
-            name: "E-quip",
-            targets: ["equipapp"]
+            name: "Emoji Ninja",
+            targets: ["emoji"]
         ),
     ],
     dependencies: [
@@ -23,27 +23,26 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "equiplib",
+            name: "ninjalib",
             dependencies: [
                 "HotKey"
             ],
-            path: "Sources/equiplib",
+            path: "Sources/ninjalib",
             resources: [
                 .process("../Resources")
             ]
         ),
         .executableTarget(
-            name: "equipapp",
+            name: "emoji",
             dependencies: [
-                "equiplib",
+                "ninjalib",
                 "HotKey",
             ],
-            path: "Sources/equipapp",
-            exclude: ["Views/Styling/README.md"]
+            path: "Sources/emojininja"
         ),
         .testTarget(
-            name: "E-quipTests",
-            dependencies: ["equiplib"]
+            name: "Emoji NinjaTests",
+            dependencies: ["ninjalib"]
         ),
     ]
 )

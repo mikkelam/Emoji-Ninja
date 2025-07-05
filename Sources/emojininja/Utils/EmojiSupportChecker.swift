@@ -1,6 +1,6 @@
 import AppKit
 import Foundation
-import equiplib
+import ninjalib
 
 struct EmojiSupportChecker {
     nonisolated(unsafe) private static let cache = NSCache<NSString, NSNumber>()

@@ -1,5 +1,5 @@
 import SwiftUI
-import equiplib
+import ninjalib
 
 struct EmojiPickerView: View {
     let windowSize: CGSize

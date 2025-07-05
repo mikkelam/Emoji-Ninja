@@ -1,5 +1,5 @@
 import SwiftUI
-import equiplib
+import ninjalib
 
 struct SearchBar: View {
     @Binding var searchText: String

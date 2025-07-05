@@ -43,7 +43,7 @@ struct MenuBarView: View {
 
         Divider()
 
-        Button("Quit E-quip") {
+        Button("Quit Emoji Ninja") {
             viewModel.quitApp()
         }
         .keyboardShortcut("q", modifiers: [.command])

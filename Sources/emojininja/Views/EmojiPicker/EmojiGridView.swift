@@ -1,5 +1,5 @@
 import SwiftUI
-import equiplib
+import ninjalib
 
 struct EmojiGridView: View {
     let geometry: GeometryProxy

@@ -1,5 +1,5 @@
 import SwiftUI
-import equiplib
+import ninjalib
 
 struct EmojiButton: View {
     let emojiData: EmojibaseEmoji
