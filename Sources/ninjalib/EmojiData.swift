@@ -10,9 +10,11 @@ public struct EmojibaseEmoji: Codable {
     public let order: Int?
     public let tags: [String]?
     public let emoticon: EmojibaseEmoticon?
+    public let skins: [EmojibaseEmoji]?
+    public let supportsSkinTones: Bool
 
     enum CodingKeys: String, CodingKey {
-        case hexcode, label, unicode, group, order, tags, emoticon
+        case hexcode, label, unicode, group, order, tags, emoticon, skins
     }
 
     public init(from decoder: Decoder) throws {
@@ -24,6 +26,8 @@ public struct EmojibaseEmoji: Codable {
         group = try container.decodeIfPresent(Int.self, forKey: .group)
         order = try container.decodeIfPresent(Int.self, forKey: .order)
         tags = try container.decodeIfPresent([String].self, forKey: .tags)
+        skins = try container.decodeIfPresent([EmojibaseEmoji].self, forKey: .skins)
+        supportsSkinTones = skins != nil
 
         // Handle emoticon which can be either String or [String]
         if let singleEmoticon = try? container.decode(String.self, forKey: .emoticon) {
@@ -44,6 +48,7 @@ public struct EmojibaseEmoji: Codable {
         try container.encodeIfPresent(group, forKey: .group)
         try container.encodeIfPresent(order, forKey: .order)
         try container.encodeIfPresent(tags, forKey: .tags)
+        try container.encodeIfPresent(skins, forKey: .skins)
 
         switch emoticon {
         case .single(let value):
@@ -259,5 +264,24 @@ public class EmojiDataManager {
         return EmojiGroup.allCases.filter { group in
             !getEmojis(for: group).isEmpty
         }
+    }
+}
+
+// MARK: - Skin Tone Support
+
+extension EmojibaseEmoji {
+
+    public func withSkinTone(_ skinTone: SkinTone) -> String {
+        guard skinTone != .default, let modifier = skinTone.modifier else {
+            return self.unicode
+        }
+
+        // If emoji has skin tone variations, compose directly
+        if supportsSkinTones {
+            return self.unicode + String(UnicodeScalar(Int(modifier, radix: 16)!)!)
+        }
+
+        // Fallback to original emoji if no skin tone variations available
+        return self.unicode
     }
 }

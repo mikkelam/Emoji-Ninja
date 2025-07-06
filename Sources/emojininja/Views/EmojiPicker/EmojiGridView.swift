@@ -5,7 +5,7 @@ struct EmojiGridView: View {
     let geometry: GeometryProxy
     let selectedEmojiIndex: Int
     let selectedCategory: CategoryType?
-    let onEmojiSelected: (String) -> Void
+    let onEmojiSelected: (EmojibaseEmoji) -> Void
     @ObservedObject var emojiManager: EmojiManager
     @ObservedObject var viewModel: EmojiPickerViewModel
     @Environment(\.theme) private var theme
@@ -54,7 +54,7 @@ struct EmojiGridView: View {
                             isSelected: emojiIndexData.globalIndex == selectedEmojiIndex,
                             geometry: geometry
                         ) {
-                            onEmojiSelected(emojiIndexData.emoji.unicode)
+                            onEmojiSelected(emojiIndexData.emoji)
                         }
                         .id(
                             "emoji_\(emojiIndexData.globalIndex)_\(viewModel.selectedCategory?.hashValue ?? -1)"

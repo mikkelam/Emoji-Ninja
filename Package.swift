@@ -41,7 +41,7 @@ let package = Package(
             path: "Sources/emojininja"
         ),
         .testTarget(
-            name: "Emoji NinjaTests",
+            name: "EmojiNinjaTests",
             dependencies: ["ninjalib"]
         ),
     ]

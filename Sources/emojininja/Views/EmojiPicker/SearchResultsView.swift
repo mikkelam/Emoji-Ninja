@@ -6,7 +6,7 @@ struct SearchResultsView: View {
     let searchResults: [EmojibaseEmoji]
     let selectedEmojiIndex: Int
     let searchResultsId: UUID
-    let onEmojiSelected: (String) -> Void
+    let onEmojiSelected: (EmojibaseEmoji) -> Void
     @Environment(\.theme) private var theme
 
     private var adaptiveColumns: [GridItem] {
@@ -40,7 +40,7 @@ struct SearchResultsView: View {
                             isSelected: index == selectedEmojiIndex,
                             geometry: geometry
                         ) {
-                            onEmojiSelected(emoji.unicode)
+                            onEmojiSelected(emoji)
                         }
                         .id("search_emoji_\(index)_\(searchResultsId)")
                     }

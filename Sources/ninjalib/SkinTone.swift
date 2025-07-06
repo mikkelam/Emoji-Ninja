@@ -10,6 +10,23 @@ public enum SkinTone: String, CaseIterable, Identifiable {
 
     public var id: String { rawValue }
 
+    public var modifier: String? {
+        switch self {
+        case .default:
+            return nil
+        case .light:
+            return "1F3FB"
+        case .mediumLight:
+            return "1F3FC"
+        case .medium:
+            return "1F3FD"
+        case .mediumDark:
+            return "1F3FE"
+        case .dark:
+            return "1F3FF"
+        }
+    }
+
     public var emoji: String {
         switch self {
         case .default:
@@ -43,4 +60,5 @@ public enum SkinTone: String, CaseIterable, Identifiable {
             return "Dark"
         }
     }
+
 }

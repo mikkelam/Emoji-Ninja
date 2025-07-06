@@ -3,13 +3,14 @@ import ninjalib
 
 struct EmojiPickerView: View {
     let windowSize: CGSize
-    let onEmojiSelected: (String) -> Void
+    let onEmojiSelected: (EmojibaseEmoji) -> Void
     @ObservedObject var emojiManager: EmojiManager
     @StateObject private var viewModel: EmojiPickerViewModel
     @Environment(\.theme) private var theme
 
     init(
-        windowSize: CGSize, onEmojiSelected: @escaping (String) -> Void, emojiManager: EmojiManager
+        windowSize: CGSize, onEmojiSelected: @escaping (EmojibaseEmoji) -> Void,
+        emojiManager: EmojiManager
     ) {
         self.windowSize = windowSize
         self.onEmojiSelected = onEmojiSelected
@@ -103,8 +104,8 @@ struct EmojiPickerView: View {
     // MARK: - Helper Functions
 
     private func handleSubmit() {
-        if let selectedEmoji = viewModel.selectCurrentEmoji() {
-            onEmojiSelected(selectedEmoji)
+        if let selectedEmojiData = viewModel.selectCurrentEmojiData() {
+            onEmojiSelected(selectedEmojiData)
         }
     }
 }

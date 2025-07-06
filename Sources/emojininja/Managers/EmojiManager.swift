@@ -64,8 +64,8 @@ class EmojiManager: ObservableObject {
         let windowSize = calculateOptimalWindowSize(for: currentScreen)
         let contentView = EmojiPickerView(
             windowSize: windowSize,
-            onEmojiSelected: { [weak self] emoji in
-                self?.handleEmojiSelection(emoji)
+            onEmojiSelected: { [weak self] emojiData in
+                self?.handleEmojiSelection(emojiData)
             },
             emojiManager: self
         )
@@ -161,15 +161,16 @@ class EmojiManager: ObservableObject {
         }
     }
 
-    private func handleEmojiSelection(_ emoji: String) {
-        FrequentlyUsedEmojiManager.shared.recordEmojiUsage(emoji)
+    private func handleEmojiSelection(_ emojiData: EmojibaseEmoji) {
+        let emojiWithSkinTone = emojiData.withSkinTone(selectedSkinTone)
+        FrequentlyUsedEmojiManager.shared.recordEmojiUsage(emojiWithSkinTone)
         hidePicker()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.typeEmojiDirectly(emoji)
+            self.typeEmojiDirectly(emojiWithSkinTone)
         }
 
-        showBriefFeedback(emoji: emoji)
+        showBriefFeedback(emoji: emojiWithSkinTone)
     }
 
     private func typeEmojiDirectly(_ emoji: String) {

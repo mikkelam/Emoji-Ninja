@@ -89,6 +89,12 @@ class EmojiPickerViewModel: ObservableObject {
         return allEmojis[selectedEmojiIndex].unicode
     }
 
+    func selectCurrentEmojiData() -> EmojibaseEmoji? {
+        let allEmojis = getAllEmojis()
+        guard selectedEmojiIndex < allEmojis.count else { return nil }
+        return allEmojis[selectedEmojiIndex]
+    }
+
     func resetSearch() {
         searchText = ""
         selectedEmojiIndex = 0
