@@ -139,28 +139,6 @@ public enum EmojiGroup: Int, CaseIterable {
         }
     }
 
-    // public var icon: String {
-    //     switch self {
-    //     case .smileysAndEmotion:
-    //         return "😀"
-    //     case .peopleAndBody:
-    //         return "👋"
-    //     case .peopleAndBody:
-    //         return "🐱"
-    //     case .foodAndDrink:
-    //         return "🍎"
-    //     case .travelAndPlaces:
-    //         return "🚗"
-    //     case .activities:
-    //         return "⚽"
-    //     case .objects:
-    //         return "💡"
-    //     case .symbols:
-    //         return "❤️"
-    //     case .flags:
-    //         return "🏳️"
-    //     }
-    // }
 }
 
 // MARK: - Emoji Font Support Checking
@@ -202,26 +180,23 @@ public class EmojiDataManager {
     }
 
     private func loadEmojiData() {
-        // Try to find the bundle that contains our resources
-        let bundle = Bundle.module
-        guard let url = bundle.url(forResource: "emoji_data", withExtension: "json") else {
-            print("❌ Failed to find emoji_data.json in bundle")
-            print("📦 Bundle path: \(bundle.bundlePath)")
-            if let resourcePath = bundle.resourcePath {
-                print("📁 Resource path: \(resourcePath)")
-                let resourceURL = URL(fileURLWithPath: resourcePath)
-                if let contents = try? FileManager.default.contentsOfDirectory(
-                    at: resourceURL, includingPropertiesForKeys: nil)
-                {
-                    print("📋 Bundle contents: \(contents.map { $0.lastPathComponent })")
-                }
-            }
-            return
+        guard let resourcePath = Bundle.main.resourcePath else {
+            fatalError("❌ Failed to find app resources path")
+        }
+
+        let bundlePath = URL(fileURLWithPath: resourcePath).appendingPathComponent(
+            "Emoji Ninja_ninjalib.bundle")
+
+        guard let resourceBundle = Bundle(url: bundlePath) else {
+            fatalError("❌ Failed to load resource bundle at \(bundlePath)")
+        }
+
+        guard let url = resourceBundle.url(forResource: "emoji_data", withExtension: "json") else {
+            fatalError("❌ Failed to find emoji_data.json in resource bundle")
         }
 
         guard let data = try? Data(contentsOf: url) else {
-            print("❌ Failed to load data from emoji_data.json")
-            return
+            fatalError("❌ Failed to load data from emoji_data.json")
         }
 
         do {
@@ -236,7 +211,7 @@ public class EmojiDataManager {
             groupEmojis()
 
         } catch {
-            print("❌ Failed to decode emoji data: \(error)")
+            fatalError("❌ Failed to decode emoji data: \(error)")
         }
     }
 

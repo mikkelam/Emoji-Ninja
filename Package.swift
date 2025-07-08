@@ -27,10 +27,7 @@ let package = Package(
             dependencies: [
                 "HotKey"
             ],
-            path: "Sources/ninjalib",
-            resources: [
-                .copy("../Resources/emoji_data.json")
-            ]
+            path: "Sources/ninjalib"
         ),
         .executableTarget(
             name: "emoji",

@@ -123,6 +123,20 @@ else
     echo -e "${RED}❌ ninja.png not found${NC}"
 fi
 
+# Copy emoji data JSON file
+echo -e "${YELLOW}📦 Copying emoji data...${NC}"
+if [ -f "Sources/Resources/emoji_data.json" ]; then
+    echo -e "${YELLOW}🔍 Found emoji_data.json, copying...${NC}"
+    # Create bundle directory structure
+    BUNDLE_DIR="$RESOURCES_DIR/Emoji Ninja_ninjalib.bundle"
+    mkdir -p "$BUNDLE_DIR"
+    cp "Sources/Resources/emoji_data.json" "$BUNDLE_DIR/"
+else
+    echo -e "${RED}❌ emoji_data.json not found${NC}"
+    echo -e "${RED}❌ Build will fail without emoji data${NC}"
+    exit 1
+fi
+
 echo -e "${GREEN}✅ App bundle created at: $APP_DIR${NC}"
 echo -e "${GREEN}💡 You can now run: open $APP_DIR${NC}"
 

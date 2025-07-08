@@ -82,6 +82,15 @@ fi
 echo -e "${BLUE}📁 Step 2: Preparing distribution...${NC}"
 mkdir -p "$DIST_DIR"
 
+# Step 2.5: Code sign the app
+echo -e "${BLUE}✍️ Step 2.5: Code signing app...${NC}"
+codesign --force --deep --sign - "$APP_BUNDLE"
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ App signed successfully${NC}"
+else
+    echo -e "${YELLOW}⚠️ Code signing failed, continuing anyway...${NC}"
+fi
+
 # Step 3: Create ZIP archive
 if [ "$DMG_ONLY" = false ]; then
     echo -e "${BLUE}📦 Step 3: Creating ZIP archive...${NC}"
@@ -98,24 +107,22 @@ if [ "$ZIP_ONLY" = false ]; then
 
     DMG_PATH="$DIST_DIR/$DMG_NAME-v$VERSION.dmg"
     TEMP_DMG="$DIST_DIR/temp.dmg"
+    DMG_STAGING="$DIST_DIR/dmg_staging"
 
-    # Remove existing DMG
-    rm -f "$DMG_PATH" "$TEMP_DMG"
+    # Remove existing files
+    rm -rf "$DMG_PATH" "$TEMP_DMG" "$DMG_STAGING"
 
-    # Create temporary DMG
-    hdiutil create -size 100m -format UDRW -volname "$DMG_NAME v$VERSION" "$TEMP_DMG"
+    # Create staging directory
+    mkdir -p "$DMG_STAGING"
 
-    # Mount the DMG
-    MOUNT_DIR=$(hdiutil attach "$TEMP_DMG" | grep -E '^/dev/' | awk '{print $3}')
-
-    # Copy app to DMG
-    cp -R "$APP_BUNDLE" "$MOUNT_DIR/"
+    # Copy app to staging
+    cp -R "$APP_BUNDLE" "$DMG_STAGING/"
 
     # Create Applications symlink for easy installation
-    ln -s /Applications "$MOUNT_DIR/Applications"
+    ln -s /Applications "$DMG_STAGING/Applications"
 
     # Add README for users about unsigned app
-    cat > "$MOUNT_DIR/README.txt" << 'EOF'
+    cat > "$DMG_STAGING/README.txt" << 'EOF'
 Installation Instructions:
 
 1. Drag "Emoji Ninja.app" to the Applications folder
@@ -127,45 +134,9 @@ This app is unsigned because it's distributed for free.
 Your security is important - only install if you trust the source.
 EOF
 
-    # Set DMG icon if available
-    if [ -f "BuildResources/ninja.png" ]; then
-        echo -e "${YELLOW}🎨 Adding custom icon...${NC}"
-        # Convert PNG to icns for DMG
-        mkdir -p tmp.iconset
-        sips -z 16 16 BuildResources/ninja.png --out tmp.iconset/icon_16x16.png 2>/dev/null || true
-        sips -z 32 32 BuildResources/ninja.png --out tmp.iconset/icon_16x16@2x.png 2>/dev/null || true
-        sips -z 32 32 BuildResources/ninja.png --out tmp.iconset/icon_32x32.png 2>/dev/null || true
-        sips -z 64 64 BuildResources/ninja.png --out tmp.iconset/icon_32x32@2x.png 2>/dev/null || true
-        sips -z 128 128 BuildResources/ninja.png --out tmp.iconset/icon_128x128.png 2>/dev/null || true
-        sips -z 256 256 BuildResources/ninja.png --out tmp.iconset/icon_128x128@2x.png 2>/dev/null || true
-        sips -z 256 256 BuildResources/ninja.png --out tmp.iconset/icon_256x256.png 2>/dev/null || true
-        sips -z 512 512 BuildResources/ninja.png --out tmp.iconset/icon_256x256@2x.png 2>/dev/null || true
-        sips -z 512 512 BuildResources/ninja.png --out tmp.iconset/icon_512x512.png 2>/dev/null || true
-        sips -z 1024 1024 BuildResources/ninja.png --out tmp.iconset/icon_512x512@2x.png 2>/dev/null || true
-
-        if iconutil -c icns tmp.iconset -o "$DIST_DIR/dmg-icon.icns" 2>/dev/null; then
-            echo -e "${GREEN}✅ Custom icon created${NC}"
-        fi
-        rm -rf tmp.iconset
-    fi
-
-    # Unmount DMG
-    hdiutil detach "$MOUNT_DIR"
-
-    # Convert to final read-only DMG
-    hdiutil convert "$TEMP_DMG" -format UDZO -o "$DMG_PATH"
-    rm "$TEMP_DMG"
-
-    # Set DMG icon if we created one
-    if [ -f "$DIST_DIR/dmg-icon.icns" ]; then
-        sips -i "$DIST_DIR/dmg-icon.icns" 2>/dev/null || true
-        if command -v DeRez >/dev/null 2>&1 && command -v Rez >/dev/null 2>&1; then
-            DeRez -only icns "$DIST_DIR/dmg-icon.icns" > /tmp/tmpicns.rsrc 2>/dev/null || true
-            Rez -append /tmp/tmpicns.rsrc -o "$DMG_PATH" 2>/dev/null || true
-            SetFile -a C "$DMG_PATH" 2>/dev/null || true
-        fi
-        rm -f "$DIST_DIR/dmg-icon.icns"
-    fi
+    # Create final DMG directly
+    hdiutil create -srcfolder "$DMG_STAGING" -format UDZO -volname "$DMG_NAME v$VERSION" "$DMG_PATH"
+    rm -rf "$DMG_STAGING"
 
     echo -e "${GREEN}✅ DMG created: $DMG_PATH${NC}"
 fi
@@ -218,6 +189,3 @@ echo -e "1. Create a new release on GitHub"
 echo -e "2. Upload the DMG and/or ZIP files"
 echo -e "3. Copy content from RELEASE_NOTES.md to the release description"
 echo -e "4. Include installation instructions for unsigned apps"
-
-echo -e "${YELLOW}⚠️  Important: Users must right-click and 'Open' to bypass Gatekeeper${NC}"
-echo -e "${GREEN}💡 Consider adding installation GIFs to your README${NC}"
