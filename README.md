@@ -16,7 +16,6 @@ A performant macOS emoji picker. No fuss, just find emojis. Fast.
 - **100% Offline**
 
 Free and open source. Forever.
-## Installation
 
 ## Downloads
 Pre-built application bundles can be downloaded from [GitHub Releases](https://github.com/mikkelam/emoji-ninja/releases/).
