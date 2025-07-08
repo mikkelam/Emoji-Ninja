@@ -18,6 +18,11 @@ A performant macOS emoji picker. No fuss, just find emojis. Fast.
 Free and open source. Forever.
 ## Installation
 
+## Downloads
+Pre-built application bundles can be downloaded from [GitHub Releases](https://github.com/mikkelam/emoji-ninja/releases/).
+
+Note that the app bundles are not signed and notarised (as I'm currently not paying Apple for the privilege), so you'll need to [disable Gatekeeper](https://disable-gatekeeper.github.io) for Emoji Ninja. I apologize for this inconvenience.
+
 ### Build from Source
 
 build and run:
