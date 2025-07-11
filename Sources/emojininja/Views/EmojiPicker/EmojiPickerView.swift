@@ -68,18 +68,22 @@ struct EmojiPickerView: View {
                     }
                     .onChange(of: viewModel.selectedEmojiIndex) { _, newIndex in
                         withAnimation(.easeInOut(duration: 0.3)) {
-                            proxy.scrollTo(
-                                "emoji_\(newIndex)_\(viewModel.selectedCategory?.hashValue ?? -1)",
-                                anchor: .center)
+                            if let currentEmoji = viewModel.getCurrentEmoji() {
+                                proxy.scrollTo(
+                                    "emoji_\(currentEmoji.hexcode)",
+                                    anchor: .center)
+                            }
                         }
                     }
                     .onChange(of: viewModel.selectedCategory) { _, _ in
                         // When category changes, scroll to the selected emoji
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             withAnimation(.easeInOut(duration: 0.3)) {
-                                proxy.scrollTo(
-                                    "emoji_\(viewModel.selectedEmojiIndex)_\(viewModel.selectedCategory?.hashValue ?? -1)",
-                                    anchor: .center)
+                                if let currentEmoji = viewModel.getCurrentEmoji() {
+                                    proxy.scrollTo(
+                                        "emoji_\(currentEmoji.hexcode)",
+                                        anchor: .center)
+                                }
                             }
                         }
                     }

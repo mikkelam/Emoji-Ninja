@@ -119,13 +119,13 @@ public enum EmojiGroup: Int, CaseIterable {
         case .smileysAndEmotion:
             return "😀"
         case .peopleAndBody:
-            return "🥷"
+            return "👋"
         case .component:
             return "🔧"
         case .animalsAndNature:
             return "🐱"
         case .foodAndDrink:
-            return "🍆"
+            return "🍕"
         case .activities:
             return "🎨"
         case .travelAndPlaces:

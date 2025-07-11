@@ -33,7 +33,7 @@ struct SearchResultsView: View {
                 .emptyStateStyle()
             } else {
                 LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
-                    ForEach(Array(searchResults.enumerated()), id: \.element.unicode) {
+                    ForEach(Array(searchResults.enumerated()), id: \.element.hexcode) {
                         index, emoji in
                         EmojiButton(
                             emojiData: emoji,
@@ -42,7 +42,7 @@ struct SearchResultsView: View {
                         ) {
                             onEmojiSelected(emoji)
                         }
-                        .id("search_emoji_\(index)_\(searchResultsId)")
+                        .id("emoji_\(emoji.hexcode)")
                     }
                 }
                 .id("search_grid_\(searchResultsId)")

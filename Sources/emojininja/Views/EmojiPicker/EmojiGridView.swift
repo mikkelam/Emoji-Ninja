@@ -56,12 +56,10 @@ struct EmojiGridView: View {
                         ) {
                             onEmojiSelected(emojiIndexData.emoji)
                         }
-                        .id(
-                            "emoji_\(emojiIndexData.globalIndex)_\(viewModel.selectedCategory?.hashValue ?? -1)"
-                        )
+                        .id("emoji_\(emojiIndexData.emoji.hexcode)")
                     }
                 }
-                .id("grid_\(categoryData.category)_\(categoryData.emojiIndices.count)")
+                .id("grid_\(categoryData.category)")
             } header: {
                 HStack {
                     Text(categoryData.category.representativeEmoji)
@@ -79,6 +77,6 @@ struct EmojiGridView: View {
             }
             .id(categoryData.category)
         }
-        .id("category_grid_\(viewModel.selectedCategory?.hashValue ?? -1)_\(emojiData.count)")
+        .id("category_grid_\(viewModel.selectedCategory?.hashValue ?? -1)")
     }
 }
