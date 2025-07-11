@@ -93,6 +93,23 @@ struct EmojiPickerView: View {
             .background(theme.colors.background)
         }
         .frame(width: windowSize.width, height: windowSize.height)
+        .onKeyPress { keyPress in
+            // Handle tab navigation using actual characters
+            let character = keyPress.key.character
+
+            if character == "\u{19}" || character == "\u{9}" {  // Tab or Shift+Tab
+                if !viewModel.isInSearchMode {
+                    if character == "\u{19}" {  // Shift+Tab
+                        viewModel.navigateToPreviousCategory()
+                    } else if character == "\u{9}" {  // Tab
+                        viewModel.navigateToNextCategory()
+                    }
+                }
+                // Always handle tab events to prevent focus changes
+                return .handled
+            }
+            return .ignored
+        }
         .onAppear {
             viewModel.resetSearch()
         }

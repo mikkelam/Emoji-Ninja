@@ -31,7 +31,7 @@ struct SearchBar: View {
                         .focused($isSearchFocused)
                         .font(theme.typography.title)
                         .onKeyPress { keyPress in
-                            // Handle arrow keys for navigation, let other keys through for typing
+                            // Handle arrow keys and other navigation
                             if keyPress.key == .upArrow || keyPress.key == .downArrow
                                 || keyPress.key == .leftArrow || keyPress.key == .rightArrow
                             {
@@ -40,8 +40,15 @@ struct SearchBar: View {
                                 onSubmit()
                                 return .handled
                             } else if keyPress.key == .escape {
-                                onEscape()
-                                return .handled
+                                if !searchText.isEmpty {
+                                    // First escape clears search
+                                    searchText = ""
+                                    return .handled
+                                } else {
+                                    // Second escape or escape with empty search closes picker
+                                    onEscape()
+                                    return .handled
+                                }
                             }
                             return .ignored
                         }

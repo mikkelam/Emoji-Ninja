@@ -115,6 +115,63 @@ class EmojiPickerViewModel: ObservableObject {
 
     // MARK: - Private Methods
 
+    // MARK: - Category Navigation
+
+    func navigateToNextCategory() {
+        // Skip category navigation while in search mode
+        guard !isInSearchMode else { return }
+
+        let availableCategories = getAvailableCategories()
+        guard !availableCategories.isEmpty else { return }
+
+        if let currentCategory = selectedCategory {
+            if let currentIndex = availableCategories.firstIndex(of: currentCategory) {
+                let nextIndex = (currentIndex + 1) % availableCategories.count
+                selectedCategory = availableCategories[nextIndex]
+            }
+        } else {
+            // Currently showing "All", move to first category
+            selectedCategory = availableCategories.first
+        }
+
+        selectedEmojiIndex = 0
+    }
+
+    func navigateToPreviousCategory() {
+        // Skip category navigation while in search mode
+        guard !isInSearchMode else { return }
+
+        let availableCategories = getAvailableCategories()
+        guard !availableCategories.isEmpty else { return }
+
+        if let currentCategory = selectedCategory {
+            if let currentIndex = availableCategories.firstIndex(of: currentCategory) {
+                let previousIndex =
+                    currentIndex == 0 ? availableCategories.count - 1 : currentIndex - 1
+                selectedCategory = availableCategories[previousIndex]
+            }
+        } else {
+            // Currently showing "All", move to last category
+            selectedCategory = availableCategories.last
+        }
+
+        selectedEmojiIndex = 0
+    }
+
+    private func getAvailableCategories() -> [CategoryType] {
+        var categories: [CategoryType] = []
+
+        // Add frequently used if available
+        if FrequentlyUsedEmojiManager.shared.hasFrequentlyUsedEmojis() {
+            categories.append(.frequentlyUsed)
+        }
+
+        // Add regular categories
+        categories.append(contentsOf: EmojiGroup.availableGroups.map { .regular($0) })
+
+        return categories
+    }
+
     private func getAllEmojis() -> [EmojibaseEmoji] {
         if !isInSearchMode {
             if let selectedCategory = selectedCategory {
