@@ -15,28 +15,11 @@ struct EmojiNinjaApp: App {
     }
 
     private var menuBarImage: NSImage {
-        let image = NSImage(size: NSSize(width: 18, height: 18))
-        image.lockFocus()
+        guard let image = NSImage(named: "ninja_menu") else {
+            fatalError("ninja_menu.png not found")
+        }
+        image.size = NSSize(width: 16, height: 16)
 
-        let emoji = "🥷"
-        let font = NSFont.systemFont(ofSize: 16)
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
-            .foregroundColor: NSColor.controlTextColor,
-        ]
-
-        let size = emoji.size(withAttributes: attributes)
-        let rect = NSRect(
-            x: (18 - size.width) / 2,
-            y: (18 - size.height) / 2,
-            width: size.width,
-            height: size.height
-        )
-
-        emoji.draw(in: rect, withAttributes: attributes)
-        image.unlockFocus()
-
-        image.isTemplate = true
         return image
     }
 

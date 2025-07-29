@@ -115,13 +115,23 @@ chmod +x "$MACOS_DIR/$APP_NAME"
 # Copy Info.plist
 cp "BuildResources/Info.plist" "$CONTENTS_DIR/Info.plist"
 
-# Copy and convert ninja.png to icns if it exists
+# Copy ninja icons
 if [ -f "BuildResources/ninja.png" ]; then
     echo -e "${YELLOW}🔍 Found ninja.png, copying${NC}"
     cp "BuildResources/ninja.png" "$RESOURCES_DIR/ninja.png"
 else
     echo -e "${RED}❌ ninja.png not found${NC}"
 fi
+
+# Copy ninja_menu icon variants
+for variant in "ninja_menu.png" "ninja_menu@2x.png" "ninja_menu@3x.png"; do
+    if [ -f "BuildResources/$variant" ]; then
+        echo -e "${YELLOW}🔍 Found $variant, copying${NC}"
+        cp "BuildResources/$variant" "$RESOURCES_DIR/$variant"
+    else
+        echo -e "${YELLOW}⚠️  $variant not found (optional)${NC}"
+    fi
+done
 
 # Copy emoji data JSON file
 echo -e "${YELLOW}📦 Copying emoji data...${NC}"
