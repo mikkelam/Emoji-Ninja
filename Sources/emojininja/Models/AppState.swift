@@ -16,12 +16,20 @@ class AppState: ObservableObject {
     @Published var hasAccessibilityPermission = false
     @Published var showingAccessibilityAlert = false
 
+    private nonisolated(unsafe) var permissionCheckTimer: Timer?
+
+    // Track if user has seen the accessibility dialog
+    private let hasSeenAccessibilityDialogKey = "hasSeenAccessibilityDialog"
+
     init() {
         // Initialize launch at login state
         // checkLaunchAtLoginStatus()
 
         // Check accessibility permissions on startup
         _ = checkAccessibilityPermissions()
+
+        // Start periodic permission checking
+        startPeriodicPermissionChecking()
     }
 
     private func checkLaunchAtLoginStatus() {
@@ -81,5 +89,32 @@ class AppState: ObservableObject {
             string:
                 "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
         NSWorkspace.shared.open(url)
+    }
+
+    func shouldShowAccessibilityDialogOnLaunch() -> Bool {
+        // Show if haven't seen it and don't have permissions
+        return !hasSeenAccessibilityDialog() && !hasAccessibilityPermission
+    }
+
+    func markAccessibilityDialogAsSeen() {
+        UserDefaults.standard.set(true, forKey: hasSeenAccessibilityDialogKey)
+    }
+
+    private func hasSeenAccessibilityDialog() -> Bool {
+        return UserDefaults.standard.bool(forKey: hasSeenAccessibilityDialogKey)
+    }
+
+    private func startPeriodicPermissionChecking() {
+        // Check every 2 seconds to catch when user grants permission
+        permissionCheckTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) {
+            [weak self] _ in
+            Task { @MainActor in
+                _ = self?.checkAccessibilityPermissions()
+            }
+        }
+    }
+
+    deinit {
+        permissionCheckTimer?.invalidate()
     }
 }

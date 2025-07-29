@@ -22,6 +22,40 @@ struct MenuBarView: View {
             viewModel.showEmojiPicker()
         }
         .keyboardShortcut(.space, modifiers: [.command, .control])
+        .onAppear {
+            // Check if we should show the first launch dialog
+            viewModel.checkAndShowFirstLaunchDialog()
+        }
+
+        // Accessibility permission status
+        if !viewModel.hasAccessibilityPermission {
+            Button(action: {
+                viewModel.showAccessibilityDialog()
+            }) {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                    Text("Grant Ninja Powers")
+                }
+            }
+        }
+
+        #if DEBUG
+            // Debug-only: Always show permission modal option with status indicator
+            Button(action: {
+                viewModel.showAccessibilityDialog()
+            }) {
+                HStack {
+                    Image(
+                        systemName: viewModel.hasAccessibilityPermission
+                            ? "checkmark.circle.fill" : "exclamationmark.triangle.fill"
+                    )
+                    .foregroundColor(viewModel.hasAccessibilityPermission ? .green : .orange)
+                    Text("Permission Modal (\(viewModel.hasAccessibilityPermission ? "✓" : "✗"))")
+                        .foregroundColor(.secondary)
+                }
+            }
+        #endif
 
         Button(viewModel.launchAtLogin ? "✓ Launch at Login" : "Launch at Login") {
             viewModel.launchAtLogin.toggle()
