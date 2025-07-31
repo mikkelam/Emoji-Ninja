@@ -10,6 +10,10 @@ struct EmojiGridView: View {
     @ObservedObject var viewModel: EmojiPickerViewModel
     @Environment(\.theme) private var theme
 
+    private var buttonSize: CGFloat {
+        EmojiLayout.cachedButtonSize(for: geometry, theme: theme)
+    }
+
     private var adaptiveColumns: [GridItem] {
         Array(
             repeating: GridItem(.adaptive(minimum: 60, maximum: 120), spacing: theme.spacing.small),
@@ -44,7 +48,7 @@ struct EmojiGridView: View {
                 categoryData: categoryData,
                 adaptiveColumns: adaptiveColumns,
                 selectedEmojiIndex: selectedEmojiIndex,
-                geometry: geometry,
+                buttonSize: buttonSize,
                 onEmojiSelected: onEmojiSelected
             )
         }
@@ -57,7 +61,7 @@ struct EmojiCategorySection: View {
         (category: CategoryType, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)])
     let adaptiveColumns: [GridItem]
     let selectedEmojiIndex: Int
-    let geometry: GeometryProxy
+    let buttonSize: CGFloat
     let onEmojiSelected: (EmojibaseEmoji) -> Void
     @Environment(\.theme) private var theme
 
@@ -68,7 +72,7 @@ struct EmojiCategorySection: View {
                     FastEmojiButton(
                         emojiData: emojiIndexData.emoji,
                         isSelected: emojiIndexData.globalIndex == selectedEmojiIndex,
-                        geometry: geometry
+                        buttonSize: buttonSize
                     ) {
                         onEmojiSelected(emojiIndexData.emoji)
                     }

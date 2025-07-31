@@ -5,7 +5,7 @@ struct FastEmojiButton: View {
     let emojiData: EmojibaseEmoji
     let action: () -> Void
     let isSelected: Bool
-    let geometry: GeometryProxy
+    let buttonSize: CGFloat
     @Environment(\.theme) private var theme
     @State private var isHovered = false
     @State private var isPressed = false
@@ -14,17 +14,13 @@ struct FastEmojiButton: View {
     init(
         emojiData: EmojibaseEmoji,
         isSelected: Bool = false,
-        geometry: GeometryProxy,
+        buttonSize: CGFloat,
         action: @escaping () -> Void
     ) {
         self.emojiData = emojiData
         self.isSelected = isSelected
-        self.geometry = geometry
+        self.buttonSize = buttonSize
         self.action = action
-    }
-
-    private var buttonSize: CGFloat {
-        return EmojiLayout.calculateButtonSize(for: geometry, theme: theme)
     }
 
     private var shouldShowEffects: Bool {

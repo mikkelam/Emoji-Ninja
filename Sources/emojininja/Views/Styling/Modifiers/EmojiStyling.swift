@@ -264,18 +264,3 @@ struct EmojiAnimations {
 }
 
 // MARK: - Layout Constants
-struct EmojiLayout {
-    static let gridColumns = 8
-    static let minButtonSize: CGFloat = 58
-    static let maxButtonSize: CGFloat = 118
-    static let searchBarHeight: CGFloat = 60
-    static let categoryPillHeight: CGFloat = 32
-    static let skinToneSelectorSize: CGFloat = 45
-
-    static func calculateButtonSize(for geometry: GeometryProxy, theme: Theme) -> CGFloat {
-        let availableWidth = geometry.size.width - (theme.spacing.medium * 2)
-        let spacing: CGFloat = CGFloat(gridColumns - 1) * theme.spacing.small
-        return max(
-            minButtonSize, min(maxButtonSize, (availableWidth - spacing) / CGFloat(gridColumns)))
-    }
-}

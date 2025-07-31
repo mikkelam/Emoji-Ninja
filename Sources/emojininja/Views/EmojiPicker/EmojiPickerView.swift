@@ -7,6 +7,7 @@ struct EmojiPickerView: View {
     @ObservedObject var emojiManager: EmojiManager
     @StateObject private var viewModel: EmojiPickerViewModel
     @StateObject private var tooltipManager = TooltipManager()
+    @State private var isScrolling = false
     @Environment(\.theme) private var theme
 
     init(
@@ -57,7 +58,8 @@ struct EmojiPickerView: View {
                                 } else {
                                     // Search results mode
                                     SearchResultsView(
-                                        geometry: geometry,
+                                        buttonSize: EmojiLayout.cachedButtonSize(
+                                            for: geometry, theme: theme),
                                         searchResults: viewModel.currentSearchResults,
                                         selectedEmojiIndex: viewModel.selectedEmojiIndex,
                                         searchResultsId: viewModel.searchResultsId,
@@ -68,23 +70,29 @@ struct EmojiPickerView: View {
                             .padding(.horizontal, theme.spacing.medium)
                             .padding(.vertical, theme.spacing.xs)
                         }
+                        .trackEmojiScrolling(isScrolling: $isScrolling)
                         .onChange(of: viewModel.selectedEmojiIndex) { _, newIndex in
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                if let currentEmoji = viewModel.getCurrentEmoji() {
-                                    proxy.scrollTo(
-                                        "emoji_\(currentEmoji.hexcode)",
-                                        anchor: .center)
+                            if let currentEmoji = viewModel.getCurrentEmoji() {
+                                let targetId = "emoji_\(currentEmoji.hexcode)"
+                                if !isScrolling {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        proxy.scrollTo(targetId, anchor: .center)
+                                    }
+                                } else {
+                                    proxy.scrollTo(targetId, anchor: .center)
                                 }
                             }
                         }
                         .onChange(of: viewModel.selectedCategory) { _, _ in
-                            // When category changes, scroll to the selected emoji
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    if let currentEmoji = viewModel.getCurrentEmoji() {
-                                        proxy.scrollTo(
-                                            "emoji_\(currentEmoji.hexcode)",
-                                            anchor: .center)
+                                if let currentEmoji = viewModel.getCurrentEmoji() {
+                                    let targetId = "emoji_\(currentEmoji.hexcode)"
+                                    if !isScrolling {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            proxy.scrollTo(targetId, anchor: .center)
+                                        }
+                                    } else {
+                                        proxy.scrollTo(targetId, anchor: .center)
                                     }
                                 }
                             }

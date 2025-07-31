@@ -2,7 +2,7 @@ import SwiftUI
 import ninjalib
 
 struct SearchResultsView: View {
-    let geometry: GeometryProxy
+    let buttonSize: CGFloat
     let searchResults: [EmojibaseEmoji]
     let selectedEmojiIndex: Int
     let searchResultsId: UUID
@@ -38,7 +38,7 @@ struct SearchResultsView: View {
                         FastEmojiButton(
                             emojiData: emoji,
                             isSelected: index == selectedEmojiIndex,
-                            geometry: geometry
+                            buttonSize: buttonSize
                         ) {
                             onEmojiSelected(emoji)
                         }
