@@ -38,4 +38,4 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           swiftlint: true
-          swift-format: true
+          swift_format_official: true
