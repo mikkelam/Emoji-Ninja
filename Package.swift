@@ -16,7 +16,7 @@ let package = Package(
     .executable(
       name: "Emoji Ninja",
       targets: ["emoji"]
-    )
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/soffes/HotKey", from: "0.2.0")
@@ -36,13 +36,13 @@ let package = Package(
       name: "emoji",
       dependencies: [
         "ninjalib",
-        "HotKey"
+        "HotKey",
       ],
       path: "Sources/emojininja"
     ),
     .testTarget(
       name: "EmojiNinjaTests",
       dependencies: ["ninjalib"]
-    )
+    ),
   ]
 )

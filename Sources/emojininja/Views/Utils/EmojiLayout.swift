@@ -46,7 +46,8 @@ final class EmojiButtonSizeCache {
       let lastSmall = lastSmallSpacing,
       lastSize == geometry.size,
       lastMedium == theme.spacing.medium,
-      lastSmall == theme.spacing.small {
+      lastSmall == theme.spacing.small
+    {
       return cached
     }
 

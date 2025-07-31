@@ -207,7 +207,7 @@ struct EmojiSearchKitTests {
       "!@#$%^&*()",  // Special chars only
       " leading space",
       "trailing space ",
-      "  multiple   spaces  "
+      "  multiple   spaces  ",
     ]
 
     for query in edgeCases {

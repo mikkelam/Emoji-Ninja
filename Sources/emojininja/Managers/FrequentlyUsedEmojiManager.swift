@@ -40,7 +40,8 @@ class FrequentlyUsedEmojiManager: ObservableObject {
 
   private func loadUsageData() {
     if let data = userDefaults.data(forKey: usageCountKey),
-      let decoded = try? JSONDecoder().decode([String: Int].self, from: data) {
+      let decoded = try? JSONDecoder().decode([String: Int].self, from: data)
+    {
       emojiUsageCount = decoded
     }
   }

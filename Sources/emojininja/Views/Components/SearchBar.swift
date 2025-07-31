@@ -33,7 +33,8 @@ struct SearchBar: View {
             .onKeyPress { keyPress in
               // Handle arrow keys and other navigation
               if keyPress.key == .upArrow || keyPress.key == .downArrow
-                || keyPress.key == .leftArrow || keyPress.key == .rightArrow {
+                || keyPress.key == .leftArrow || keyPress.key == .rightArrow
+              {
                 return onKeyPress(keyPress)
               } else if keyPress.key == .return {
                 onSubmit()
