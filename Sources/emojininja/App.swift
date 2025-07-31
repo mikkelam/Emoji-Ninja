@@ -40,7 +40,7 @@ struct EmojiNinjaApp: App {
   @MainActor
   private func logEmojiDataStats() {
     let dataManager = AppEmojiManager.shared
-    let _ = dataManager.getAllEmojis()
-    let _ = dataManager.getAvailableGroups()
+    _ = dataManager.getAllEmojis()
+    _ = dataManager.getAvailableGroups()
   }
 }

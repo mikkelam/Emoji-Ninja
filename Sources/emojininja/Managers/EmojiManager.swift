@@ -90,7 +90,7 @@ class EmojiManager: ObservableObject {
     let mouseLocation = NSEvent.mouseLocation
     let screens = NSScreen.screens
     return screens.first { screen in
-      NSPointInRect(mouseLocation, screen.frame)
+      screen.frame.contains(mouseLocation)
     } ?? NSScreen.main ?? screens.first!
   }
 

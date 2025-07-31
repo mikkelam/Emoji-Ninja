@@ -87,7 +87,7 @@ struct ResourceLoadingTests {
 
     @Test func dataManagerLoadingPerformance() {
         let start = Date()
-        let _ = EmojiDataManager.shared.getAllEmojis()
+        _ = EmojiDataManager.shared.getAllEmojis()
         let elapsed = Date().timeIntervalSince(start)
 
         // Should load quickly (subsequent calls are cached)

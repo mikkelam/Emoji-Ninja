@@ -221,8 +221,7 @@ enum IconSize {
 // MARK: - View Extensions
 extension View {
   func emojiButtonStyle(isSelected: Bool = false, isHovered: Bool = false, size: CGFloat)
-    -> some View
-  {
+    -> some View {
     buttonStyle(EmojiButtonStyle(isSelected: isSelected, isHovered: isHovered, size: size))
   }
 

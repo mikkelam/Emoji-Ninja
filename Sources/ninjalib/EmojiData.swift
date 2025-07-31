@@ -157,7 +157,7 @@ extension EmojibaseEmoji {
       "hair component",
       "combining",
       "modifier",
-      "variation selector",
+      "variation selector"
     ]
 
     return !unwantedLabels.contains { unwantedLabel in

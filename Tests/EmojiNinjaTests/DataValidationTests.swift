@@ -223,7 +223,7 @@ struct DataValidationTests {
 
         // Data loading should be fast (cached after first load)
         let loadStart = Date()
-        let _ = dataManager.getAllEmojis()
+        _ = dataManager.getAllEmojis()
         let loadTime = Date().timeIntervalSince(loadStart)
         #expect(loadTime < 0.1, "Data loading too slow: \(loadTime)s")
 
@@ -238,7 +238,7 @@ struct DataValidationTests {
 
         // Common searches should be fast
         let searchStart = Date()
-        let _ = dataManager.searchEmojisWithSearchKit(query: "heart")
+        _ = dataManager.searchEmojisWithSearchKit(query: "heart")
         let searchTime = Date().timeIntervalSince(searchStart)
         #expect(searchTime < 0.05, "Search too slow: \(searchTime)s")
     }

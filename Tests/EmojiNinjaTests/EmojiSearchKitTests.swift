@@ -112,7 +112,7 @@ struct EmojiSearchKitTests {
     if let first = results.first {
       let label = first.emoji.label.lowercased()
       let tags = first.emoji.tags?.joined(separator: " ").lowercased() ?? ""
-      let _ =
+      _ =
         (label.contains("smiling") || tags.contains("smiling"))
         && (label.contains("face") || tags.contains("face"))
       // Top result should ideally match both terms (but not strictly required)
@@ -158,7 +158,7 @@ struct EmojiSearchKitTests {
     let searchKit = EmojiDataManager.searchKit
 
     let start = Date()
-    let _ = searchKit.search(query: "love", limit: 20)
+    _ = searchKit.search(query: "love", limit: 20)
     let elapsed = Date().timeIntervalSince(start)
 
     // Search should complete quickly
@@ -207,7 +207,7 @@ struct EmojiSearchKitTests {
       "!@#$%^&*()",  // Special chars only
       " leading space",
       "trailing space ",
-      "  multiple   spaces  ",
+      "  multiple   spaces  "
     ]
 
     for query in edgeCases {

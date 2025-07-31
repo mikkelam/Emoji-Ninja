@@ -103,7 +103,7 @@ struct EmojiDataTests {
     let dataManager = EmojiDataManager.shared
 
     let start = Date()
-    let _ = dataManager.searchEmojisWithSearchKit(query: "smile")
+    _ = dataManager.searchEmojisWithSearchKit(query: "smile")
     let searchTime = Date().timeIntervalSince(start)
     #expect(searchTime < 0.1)
 

@@ -34,7 +34,7 @@ class EmojiPickerViewModel: ObservableObject {
 
     // Reset selected emoji index when category changes
     $selectedCategory
-      .sink { [weak self] newCategory in
+      .sink { [weak self] _ in
         self?.selectedEmojiIndex = 0
       }
       .store(in: &cancellables)

@@ -71,7 +71,7 @@ struct EmojiPickerView: View {
               .padding(.vertical, theme.spacing.xs)
             }
             .trackEmojiScrolling(isScrolling: $isScrolling)
-            .onChange(of: viewModel.selectedEmojiIndex) { _, newIndex in
+            .onChange(of: viewModel.selectedEmojiIndex) { _, _ in
               if let currentEmoji = viewModel.getCurrentEmoji() {
                 let targetId = "emoji_\(currentEmoji.hexcode)"
                 if !isScrolling {
