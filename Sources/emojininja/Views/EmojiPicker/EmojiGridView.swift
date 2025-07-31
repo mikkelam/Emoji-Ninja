@@ -24,11 +24,7 @@ struct EmojiGridView: View {
             viewModel.selectedCategory != nil ? [viewModel.selectedCategory!] : allCategories
 
         var globalIndex = 0
-
-        let result = categories.compactMap {
-            category -> (
-                category: CategoryType, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)]
-            )? in
+        return categories.compactMap { category in
             let emojis = category.getEmojis()
             guard !emojis.isEmpty else { return nil }
 
@@ -40,50 +36,70 @@ struct EmojiGridView: View {
 
             return (category: category, emojiIndices: emojiIndices)
         }
-
-        return result
     }
 
     var body: some View {
-        ForEach(Array(emojiData.enumerated()), id: \.element.category) {
-            sectionIndex, categoryData in
-            Section {
-                LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
-                    ForEach(
-                        Array(categoryData.emojiIndices.enumerated()), id: \.element.globalIndex
-                    ) {
-                        buttonIndex, emojiIndexData in
-                        let rowIndex = buttonIndex / EmojiLayout.gridColumns
-                        FastEmojiButton(
-                            emojiData: emojiIndexData.emoji,
-                            isSelected: emojiIndexData.globalIndex == selectedEmojiIndex,
-                            geometry: geometry
-                        ) {
-                            onEmojiSelected(emojiIndexData.emoji)
-                        }
-                        .zIndex(Double(sectionIndex * 10 + rowIndex))
-                        .id("emoji_\(emojiIndexData.emoji.hexcode)")
-                    }
-                }
-                .zIndex(Double(sectionIndex))
-                .id("grid_\(categoryData.category)")
-            } header: {
-                HStack {
-                    Text(categoryData.category.representativeEmoji)
-                        .font(.title3)
-                    Text(categoryData.category.displayName)
-                        .font(theme.typography.headline)
-                        .foregroundColor(theme.colors.text.secondary)
-                    Spacer()
-                }
-                .padding(.bottom, 2)
-                .padding(
-                    .top,
-                    categoryData.category == CategoryType.availableCategories.first
-                        ? 0 : theme.spacing.medium)
-            }
-            .id(categoryData.category)
+        ForEach(emojiData, id: \.category) { categoryData in
+            EmojiCategorySection(
+                categoryData: categoryData,
+                adaptiveColumns: adaptiveColumns,
+                selectedEmojiIndex: selectedEmojiIndex,
+                geometry: geometry,
+                onEmojiSelected: onEmojiSelected
+            )
         }
         .id("category_grid_\(viewModel.selectedCategory?.hashValue ?? -1)")
+    }
+}
+
+struct EmojiCategorySection: View {
+    let categoryData:
+        (category: CategoryType, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)])
+    let adaptiveColumns: [GridItem]
+    let selectedEmojiIndex: Int
+    let geometry: GeometryProxy
+    let onEmojiSelected: (EmojibaseEmoji) -> Void
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        Section {
+            LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
+                ForEach(categoryData.emojiIndices, id: \.globalIndex) { emojiIndexData in
+                    FastEmojiButton(
+                        emojiData: emojiIndexData.emoji,
+                        isSelected: emojiIndexData.globalIndex == selectedEmojiIndex,
+                        geometry: geometry
+                    ) {
+                        onEmojiSelected(emojiIndexData.emoji)
+                    }
+                    .id("emoji_\(emojiIndexData.emoji.hexcode)")
+                }
+            }
+            .id("grid_\(categoryData.category)")
+        } header: {
+            EmojiCategoryHeader(category: categoryData.category)
+        }
+        .id(categoryData.category)
+    }
+}
+
+struct EmojiCategoryHeader: View {
+    let category: CategoryType
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        HStack {
+            Text(category.representativeEmoji)
+                .font(.title3)
+            Text(category.displayName)
+                .font(theme.typography.headline)
+                .foregroundColor(theme.colors.text.secondary)
+            Spacer()
+        }
+        .padding(.bottom, 2)
+        .padding(
+            .top,
+            category == CategoryType.availableCategories.first ? 0 : theme.spacing.medium
+        )
     }
 }
