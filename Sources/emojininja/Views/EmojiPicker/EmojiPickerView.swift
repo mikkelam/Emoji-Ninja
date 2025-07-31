@@ -2,147 +2,147 @@ import SwiftUI
 import ninjalib
 
 struct EmojiPickerView: View {
-    let windowSize: CGSize
-    let onEmojiSelected: (EmojibaseEmoji) -> Void
-    @ObservedObject var emojiManager: EmojiManager
-    @StateObject private var viewModel: EmojiPickerViewModel
-    @StateObject private var tooltipManager = TooltipManager()
-    @State private var isScrolling = false
-    @Environment(\.theme) private var theme
+  let windowSize: CGSize
+  let onEmojiSelected: (EmojibaseEmoji) -> Void
+  @ObservedObject var emojiManager: EmojiManager
+  @StateObject private var viewModel: EmojiPickerViewModel
+  @StateObject private var tooltipManager = TooltipManager()
+  @State private var isScrolling = false
+  @Environment(\.theme) private var theme
 
-    init(
-        windowSize: CGSize, onEmojiSelected: @escaping (EmojibaseEmoji) -> Void,
-        emojiManager: EmojiManager
-    ) {
-        self.windowSize = windowSize
-        self.onEmojiSelected = onEmojiSelected
-        self.emojiManager = emojiManager
-        self._viewModel = StateObject(
-            wrappedValue: EmojiPickerViewModel(emojiManager: emojiManager))
-    }
+  init(
+    windowSize: CGSize, onEmojiSelected: @escaping (EmojibaseEmoji) -> Void,
+    emojiManager: EmojiManager
+  ) {
+    self.windowSize = windowSize
+    self.onEmojiSelected = onEmojiSelected
+    self.emojiManager = emojiManager
+    self._viewModel = StateObject(
+      wrappedValue: EmojiPickerViewModel(emojiManager: emojiManager))
+  }
 
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                VStack(spacing: 0) {
-                    // Search Bar
-                    SearchBar(
-                        searchText: $viewModel.searchText,
-                        emojiManager: emojiManager,
-                        onKeyPress: viewModel.handleKeyPress,
-                        onSubmit: handleSubmit,
-                        onEscape: { emojiManager.hidePicker() }
-                    )
+  var body: some View {
+    GeometryReader { geometry in
+      ZStack {
+        VStack(spacing: 0) {
+          // Search Bar
+          SearchBar(
+            searchText: $viewModel.searchText,
+            emojiManager: emojiManager,
+            onKeyPress: viewModel.handleKeyPress,
+            onSubmit: handleSubmit,
+            onEscape: { emojiManager.hidePicker() }
+          )
 
-                    // Category Filter Pills
-                    if !viewModel.isInSearchMode {
-                        CategoryFilterView(selectedCategory: $viewModel.selectedCategory)
-                    }
+          // Category Filter Pills
+          if !viewModel.isInSearchMode {
+            CategoryFilterView(selectedCategory: $viewModel.selectedCategory)
+          }
 
-                    Divider()
+          Divider()
 
-                    // Emoji Content
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            LazyVStack(alignment: .leading, spacing: 4) {
-                                if !viewModel.isInSearchMode {
-                                    // Category browsing mode
-                                    EmojiGridView(
-                                        geometry: geometry,
-                                        selectedEmojiIndex: viewModel.selectedEmojiIndex,
-                                        selectedCategory: viewModel.selectedCategory,
-                                        onEmojiSelected: onEmojiSelected,
-                                        emojiManager: emojiManager,
-                                        viewModel: viewModel
-                                    )
-                                } else {
-                                    // Search results mode
-                                    SearchResultsView(
-                                        buttonSize: EmojiLayout.cachedButtonSize(
-                                            for: geometry, theme: theme),
-                                        searchResults: viewModel.currentSearchResults,
-                                        selectedEmojiIndex: viewModel.selectedEmojiIndex,
-                                        searchResultsId: viewModel.searchResultsId,
-                                        onEmojiSelected: onEmojiSelected
-                                    )
-                                }
-                            }
-                            .padding(.horizontal, theme.spacing.medium)
-                            .padding(.vertical, theme.spacing.xs)
-                        }
-                        .trackEmojiScrolling(isScrolling: $isScrolling)
-                        .onChange(of: viewModel.selectedEmojiIndex) { _, newIndex in
-                            if let currentEmoji = viewModel.getCurrentEmoji() {
-                                let targetId = "emoji_\(currentEmoji.hexcode)"
-                                if !isScrolling {
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        proxy.scrollTo(targetId, anchor: .center)
-                                    }
-                                } else {
-                                    proxy.scrollTo(targetId, anchor: .center)
-                                }
-                            }
-                        }
-                        .onChange(of: viewModel.selectedCategory) { _, _ in
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                if let currentEmoji = viewModel.getCurrentEmoji() {
-                                    let targetId = "emoji_\(currentEmoji.hexcode)"
-                                    if !isScrolling {
-                                        withAnimation(.easeInOut(duration: 0.3)) {
-                                            proxy.scrollTo(targetId, anchor: .center)
-                                        }
-                                    } else {
-                                        proxy.scrollTo(targetId, anchor: .center)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(theme.colors.background)
-                .coordinateSpace(name: "emojiPicker")
-                .environmentObject(tooltipManager)
-
-                // Global tooltip overlay
-                GlobalTooltipView(tooltipManager: tooltipManager)
-            }
-        }
-        .frame(width: windowSize.width, height: windowSize.height)
-        .onKeyPress { keyPress in
-            // Handle tab navigation using actual characters
-            let character = keyPress.key.character
-
-            if character == "\u{19}" || character == "\u{9}" {  // Tab or Shift+Tab
+          // Emoji Content
+          ScrollViewReader { proxy in
+            ScrollView {
+              LazyVStack(alignment: .leading, spacing: 4) {
                 if !viewModel.isInSearchMode {
-                    if character == "\u{19}" {  // Shift+Tab
-                        viewModel.navigateToPreviousCategory()
-                    } else if character == "\u{9}" {  // Tab
-                        viewModel.navigateToNextCategory()
-                    }
+                  // Category browsing mode
+                  EmojiGridView(
+                    geometry: geometry,
+                    selectedEmojiIndex: viewModel.selectedEmojiIndex,
+                    selectedCategory: viewModel.selectedCategory,
+                    onEmojiSelected: onEmojiSelected,
+                    emojiManager: emojiManager,
+                    viewModel: viewModel
+                  )
+                } else {
+                  // Search results mode
+                  SearchResultsView(
+                    buttonSize: EmojiLayout.cachedButtonSize(
+                      for: geometry, theme: theme),
+                    searchResults: viewModel.currentSearchResults,
+                    selectedEmojiIndex: viewModel.selectedEmojiIndex,
+                    searchResultsId: viewModel.searchResultsId,
+                    onEmojiSelected: onEmojiSelected
+                  )
                 }
-                // Always handle tab events to prevent focus changes
-                return .handled
+              }
+              .padding(.horizontal, theme.spacing.medium)
+              .padding(.vertical, theme.spacing.xs)
             }
-            return .ignored
+            .trackEmojiScrolling(isScrolling: $isScrolling)
+            .onChange(of: viewModel.selectedEmojiIndex) { _, newIndex in
+              if let currentEmoji = viewModel.getCurrentEmoji() {
+                let targetId = "emoji_\(currentEmoji.hexcode)"
+                if !isScrolling {
+                  withAnimation(.easeInOut(duration: 0.3)) {
+                    proxy.scrollTo(targetId, anchor: .center)
+                  }
+                } else {
+                  proxy.scrollTo(targetId, anchor: .center)
+                }
+              }
+            }
+            .onChange(of: viewModel.selectedCategory) { _, _ in
+              DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if let currentEmoji = viewModel.getCurrentEmoji() {
+                  let targetId = "emoji_\(currentEmoji.hexcode)"
+                  if !isScrolling {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                      proxy.scrollTo(targetId, anchor: .center)
+                    }
+                  } else {
+                    proxy.scrollTo(targetId, anchor: .center)
+                  }
+                }
+              }
+            }
+          }
         }
-        .onAppear {
-            viewModel.resetSearch()
-        }
-        .onChange(of: viewModel.searchText) { _, _ in
-            viewModel.onSearchTextChanged()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) {
-            _ in
-            viewModel.resetSearch()
-        }
-    }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(theme.colors.background)
+        .coordinateSpace(name: "emojiPicker")
+        .environmentObject(tooltipManager)
 
-    // MARK: - Helper Functions
-
-    private func handleSubmit() {
-        if let selectedEmojiData = viewModel.selectCurrentEmojiData() {
-            onEmojiSelected(selectedEmojiData)
-        }
+        // Global tooltip overlay
+        GlobalTooltipView(tooltipManager: tooltipManager)
+      }
     }
+    .frame(width: windowSize.width, height: windowSize.height)
+    .onKeyPress { keyPress in
+      // Handle tab navigation using actual characters
+      let character = keyPress.key.character
+
+      if character == "\u{19}" || character == "\u{9}" {  // Tab or Shift+Tab
+        if !viewModel.isInSearchMode {
+          if character == "\u{19}" {  // Shift+Tab
+            viewModel.navigateToPreviousCategory()
+          } else if character == "\u{9}" {  // Tab
+            viewModel.navigateToNextCategory()
+          }
+        }
+        // Always handle tab events to prevent focus changes
+        return .handled
+      }
+      return .ignored
+    }
+    .onAppear {
+      viewModel.resetSearch()
+    }
+    .onChange(of: viewModel.searchText) { _, _ in
+      viewModel.onSearchTextChanged()
+    }
+    .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) {
+      _ in
+      viewModel.resetSearch()
+    }
+  }
+
+  // MARK: - Helper Functions
+
+  private func handleSubmit() {
+    if let selectedEmojiData = viewModel.selectCurrentEmojiData() {
+      onEmojiSelected(selectedEmojiData)
+    }
+  }
 }
