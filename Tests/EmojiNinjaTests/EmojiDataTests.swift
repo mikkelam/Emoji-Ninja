@@ -1,233 +1,145 @@
-import XCTest
+import Foundation
+import Testing
 
 @testable import ninjalib
 
-final class EmojiDataTests: XCTestCase {
-    // MARK: - Data Loading Tests
+struct EmojiDataTests {
 
-    func testDataLoading() {
-        print("\n📦 Testing Data Loading...")
+  @Test func dataLoading() throws {
+    let dataManager = EmojiDataManager.shared
+    let allEmojis = dataManager.getAllEmojis()
 
-        let dataManager = EmojiDataManager.shared
-        let allEmojis = dataManager.getAllEmojis()
+    #expect(!allEmojis.isEmpty)
+    #expect(allEmojis.count > 1000)
 
-        // Test basic loading
-        assert(!allEmojis.isEmpty, "❌ No emojis loaded")
-        print("✅ Loaded \(allEmojis.count) emojis")
+    let sampleEmoji = try #require(allEmojis.first)
+    #expect(!sampleEmoji.unicode.isEmpty)
+    #expect(!sampleEmoji.label.isEmpty)
+    #expect(!sampleEmoji.hexcode.isEmpty)
+  }
 
-        // Test that we have expected minimum count
-        assert(allEmojis.count > 1000, "❌ Suspiciously few emojis loaded")
-        print("✅ Emoji count looks reasonable")
+  @Test func filtering() {
+    let dataManager = EmojiDataManager.shared
+    let allEmojis = dataManager.getAllEmojis()
 
-        // Test that emojis have required properties
-        let sampleEmoji = allEmojis.first!
-        assert(!sampleEmoji.unicode.isEmpty, "❌ Emoji missing unicode")
-        assert(!sampleEmoji.label.isEmpty, "❌ Emoji missing label")
-        assert(!sampleEmoji.hexcode.isEmpty, "❌ Emoji missing hexcode")
-        print("✅ Emoji properties are complete")
+    let hasRegionalIndicators = allEmojis.contains { emoji in
+      emoji.label.contains("regional indicator")
+    }
+    #expect(!hasRegionalIndicators)
+
+    let hasSkinToneModifiers = allEmojis.contains { emoji in
+      emoji.label.lowercased().contains("skin tone")
+    }
+    #expect(!hasSkinToneModifiers)
+
+    let allUseful = allEmojis.allSatisfy { $0.isUseful }
+    #expect(allUseful)
+  }
+
+  @Test func categorization() throws {
+    let dataManager = EmojiDataManager.shared
+    let availableGroups = dataManager.getAvailableGroups()
+
+    #expect(availableGroups.count >= 8)
+
+    for group in availableGroups {
+      let groupEmojis = dataManager.getEmojis(for: group)
+      #expect(!groupEmojis.isEmpty, "Group \(group.name) has no emojis")
     }
 
-    // MARK: - Filtering Tests
+    let groupsFromManager = dataManager.getAvailableGroups()
+    #expect(!groupsFromManager.isEmpty)
 
-    func testFiltering() {
-        print("\n🔍 Testing Emoji Filtering...")
+    let smileysGroup = groupsFromManager.first { $0.name.contains("Smileys") }
+    let group = try #require(smileysGroup)
+    let smileysEmojis = dataManager.getEmojis(for: group)
+    #expect(!smileysEmojis.isEmpty)
+  }
 
-        let dataManager = EmojiDataManager.shared
-        let allEmojis = dataManager.getAllEmojis()
+  @Test @MainActor func search() throws {
+    let dataManager = EmojiDataManager.shared
 
-        // Test that regional indicators are filtered out
-        let hasRegionalIndicators = allEmojis.contains { emoji in
-            emoji.label.contains("regional indicator")
-        }
-        assert(!hasRegionalIndicators, "❌ Regional indicators not filtered out")
-        print("✅ Regional indicators filtered out")
+    let smileResults = dataManager.searchEmojisWithSearchKit(query: "smile")
+    #expect(!smileResults.isEmpty)
 
-        // Test that skin tone modifiers are filtered out
-        let hasSkinToneModifiers = allEmojis.contains { emoji in
-            emoji.label.lowercased().contains("skin tone")
-        }
-        assert(!hasSkinToneModifiers, "❌ Skin tone modifiers not filtered out")
-        print("✅ Skin tone modifiers filtered out")
+    let firstResult = try #require(smileResults.first)
+    let containsSmile =
+      firstResult.label.lowercased().contains("smile")
+      || firstResult.tags?.contains { $0.lowercased().contains("smile") } == true
+    #expect(containsSmile)
 
-        // Test that all emojis are marked as useful
-        let allUseful = allEmojis.allSatisfy { $0.isUseful }
-        assert(allUseful, "❌ Some non-useful emojis passed through filter")
-        print("✅ All loaded emojis marked as useful")
+    let emptyResults = dataManager.searchEmojisWithSearchKit(query: "")
+    #expect(emptyResults.isEmpty)
 
+    let nonsenseResults = dataManager.searchEmojisWithSearchKit(query: "xyzabc123")
+    #expect(nonsenseResults.isEmpty)
+
+    let caseResults1 = dataManager.searchEmojisWithSearchKit(query: "SMILE")
+    let caseResults2 = dataManager.searchEmojisWithSearchKit(query: "smile")
+    #expect(caseResults1.count == caseResults2.count)
+
+    let searchResults = dataManager.searchEmojisWithSearchKit(query: "heart")
+    #expect(!searchResults.isEmpty)
+  }
+
+  @Test func emojiProperties() {
+    let dataManager = EmojiDataManager.shared
+    let allEmojis = dataManager.getAllEmojis()
+
+    for emoji in allEmojis.prefix(10) {
+      #expect(!emoji.hexcode.isEmpty)
+      #expect(!emoji.label.isEmpty)
+      #expect(!emoji.unicode.isEmpty)
     }
 
-    // MARK: - Categorization Tests
+    let groupedEmojis = Dictionary(grouping: allEmojis) { $0.group ?? -1 }
+    #expect(groupedEmojis.count > 1)
 
-    func testCategorization() {
-        print("\n📁 Testing Emoji Categorization...")
+    let usefulEmojis = allEmojis.filter { $0.isUseful }
+    #expect(usefulEmojis.count == allEmojis.count)
+  }
 
-        let dataManager = EmojiDataManager.shared
-        let availableGroups = dataManager.getAvailableGroups()
+  @Test @MainActor func performance() {
+    let dataManager = EmojiDataManager.shared
 
-        // Test that we have reasonable number of groups
-        assert(availableGroups.count >= 8, "❌ Too few emoji groups")
-        print("✅ Found \(availableGroups.count) emoji groups")
+    let start = Date()
+    _ = dataManager.searchEmojisWithSearchKit(query: "smile")
+    let searchTime = Date().timeIntervalSince(start)
+    #expect(searchTime < 0.1)
 
-        // Test that each group has emojis
-        for group in availableGroups {
-            let groupEmojis = dataManager.getEmojis(for: group)
-            assert(!groupEmojis.isEmpty, "❌ Group \(group.name) has no emojis")
-            print("  \(group.name): \(groupEmojis.count) emojis")
-        }
-        print("✅ All groups have emojis")
-
-        // Test that groups work through EmojiGroup
-        let availableGroups = EmojiGroup.availableGroups
-        assert(!availableGroups.isEmpty, "❌ No groups available")
-        print("✅ Groups accessible through EmojiGroup")
-
-        // Test specific well-known groups
-        let smileysGroup = availableGroups.first { $0.name.contains("Smileys") }
-        assert(smileysGroup != nil, "❌ Smileys group not found")
-        assert(!smileysGroup!.emojis.isEmpty, "❌ Smileys group has no emojis")
-        print("✅ Smileys group has \(smileysGroup!.emojis.count) emojis")
+    let categoryStart = Date()
+    let availableGroups = dataManager.getAvailableGroups()
+    for group in availableGroups {
+      _ = dataManager.getEmojis(for: group)
     }
+    let categoryTime = Date().timeIntervalSince(categoryStart)
+    #expect(categoryTime < 0.01)
 
-    // MARK: - Search Tests
+    let allEmojis = dataManager.getAllEmojis()
+    let memoryEstimate = allEmojis.count * 200
+    #expect(memoryEstimate < 1_000_000)
+  }
 
-    @MainActor
-    func testSearch() {
-        print("\n🔍 Testing Emoji Search...")
+  @Test func dataIntegrity() {
+    let dataManager = EmojiDataManager.shared
+    let allEmojis = dataManager.getAllEmojis()
 
-        let dataManager = EmojiDataManager.shared
+    let unicodeSet = Set(allEmojis.map { $0.unicode })
+    #expect(unicodeSet.count == allEmojis.count)
 
-        // Test basic search
-        let smileResults = dataManager.searchEmojisWithSearchKit(query: "smile")
-        XCTAssertFalse(smileResults.isEmpty, "No results for 'smile' search")
-        print("✅ 'smile' search returned \(smileResults.count) results")
+    let hasEmptyUnicode = allEmojis.contains { $0.unicode.isEmpty }
+    #expect(!hasEmptyUnicode)
 
-        // Test that search results contain the query
-        let firstResult = smileResults.first!
-        let containsSmile =
-            firstResult.label.lowercased().contains("smile")
-            || firstResult.tags?.contains { $0.lowercased().contains("smile") } == true
-        XCTAssertTrue(containsSmile, "Search result doesn't contain search term")
-        print("✅ Search results relevant to query")
-
-        // Test empty search
-        let emptyResults = dataManager.searchEmojisWithSearchKit(query: "")
-        XCTAssertTrue(emptyResults.isEmpty, "Empty search should return no results")
-        print("✅ Empty search returns no results")
-
-        // Test nonsense search
-        let nonsenseResults = dataManager.searchEmojisWithSearchKit(query: "xyzabc123")
-        XCTAssertTrue(nonsenseResults.isEmpty, "Nonsense search should return no results")
-        print("✅ Nonsense search returns no results")
-
-        // Test case insensitive search
-        let caseResults1 = dataManager.searchEmojisWithSearchKit(query: "SMILE")
-        let caseResults2 = dataManager.searchEmojisWithSearchKit(query: "smile")
-        XCTAssertEqual(caseResults1.count, caseResults2.count, "Search is case sensitive")
-        print("✅ Search is case insensitive")
-
-        // Test search through EmojiGroup
-        let groupSearchResults = EmojiGroup.searchEmojis(query: "heart")
-        XCTAssertFalse(groupSearchResults.isEmpty, "Group search failed")
-        print("✅ Group search works: \(groupSearchResults.count) results for 'heart'")
+    let hasInvalidHexcode = allEmojis.contains { emoji in
+      emoji.hexcode.isEmpty || emoji.hexcode.contains(" ")
     }
+    #expect(!hasInvalidHexcode)
 
-    // MARK: - Emoji Properties Tests
-
-    func testEmojiProperties() {
-        print("\n✅ Testing Emoji Properties...")
-
-        let dataManager = EmojiDataManager.shared
-        let allEmojis = dataManager.getAllEmojis()
-
-        // Test that all emojis have required properties
-        for emoji in allEmojis.prefix(10) {  // Test first 10 for performance
-            XCTAssertFalse(emoji.hexcode.isEmpty, "Emoji missing hexcode")
-            XCTAssertFalse(emoji.label.isEmpty, "Emoji missing label")
-            XCTAssertFalse(emoji.unicode.isEmpty, "Emoji missing unicode")
-        }
-        print("✅ All tested emojis have required properties")
-
-        // Test emoji grouping
-        let groupedEmojis = Dictionary(grouping: allEmojis) { $0.group ?? -1 }
-        XCTAssertTrue(groupedEmojis.count > 1, "Emojis should have multiple groups")
-        print("✅ Emojis are properly grouped into \(groupedEmojis.count) groups")
-
-        // Test that useful filtering works
-        let usefulEmojis = allEmojis.filter { $0.isUseful }
-        XCTAssertEqual(usefulEmojis.count, allEmojis.count, "All loaded emojis should be useful")
-        print("✅ Useful emoji filtering works correctly")
+    let groupsForCounts = dataManager.getAvailableGroups()
+    let groupCounts = groupsForCounts.map { group in
+      (group, dataManager.getEmojis(for: group).count)
     }
-
-    // MARK: - Performance Tests
-
-    @MainActor
-    func testPerformance() {
-        print("\n⚡ Testing Performance...")
-
-        let dataManager = EmojiDataManager.shared
-
-        // Test search performance
-        let start = Date()
-        let _ = dataManager.searchEmojisWithSearchKit(query: "smile")
-        let searchTime = Date().timeIntervalSince(start)
-
-        XCTAssertLessThan(searchTime, 0.1, "Search took too long: \(searchTime)s")
-        print("✅ Search performance: \(String(format: "%.3f", searchTime))s")
-
-        // Test category loading performance
-        let categoryStart = Date()
-        let availableGroups = dataManager.getAvailableGroups()
-        for group in availableGroups {
-            _ = dataManager.getEmojis(for: group)
-        }
-        let categoryTime = Date().timeIntervalSince(categoryStart)
-
-        XCTAssertLessThan(categoryTime, 0.01, "Category loading too slow: \(categoryTime)s")
-        print("✅ Category loading performance: \(String(format: "%.3f", categoryTime))s")
-
-        // Test memory usage (basic check)
-        let allEmojis = dataManager.getAllEmojis()
-        let memoryEstimate = allEmojis.count * 200  // rough estimate of bytes per emoji
-        assert(memoryEstimate < 1_000_000, "❌ Memory usage too high: ~\(memoryEstimate) bytes")
-        print("✅ Memory usage reasonable: ~\(memoryEstimate) bytes")
-    }
-
-    // MARK: - Data Integrity Tests
-
-    static func validateDataIntegrity() {
-        print("\n🔍 Validating Data Integrity...")
-
-        let dataManager = EmojiDataManager.shared
-        let allEmojis = dataManager.getAllEmojis()
-
-        // Check for duplicates
-        let unicodeSet = Set(allEmojis.map { $0.unicode })
-        assert(unicodeSet.count == allEmojis.count, "❌ Duplicate emojis found")
-        print("✅ No duplicate emojis")
-
-        // Check for empty unicode
-        let hasEmptyUnicode = allEmojis.contains { $0.unicode.isEmpty }
-        assert(!hasEmptyUnicode, "❌ Found emojis with empty unicode")
-        print("✅ All emojis have unicode")
-
-        // Check for reasonable hexcode format
-        let hasInvalidHexcode = allEmojis.contains { emoji in
-            emoji.hexcode.isEmpty || emoji.hexcode.contains(" ")
-        }
-        assert(!hasInvalidHexcode, "❌ Found emojis with invalid hexcode")
-        print("✅ All emojis have valid hexcode")
-
-        // Check group distribution
-        let groupCounts = EmojiGroup.allCases.map { group in
-            (group, dataManager.getEmojis(for: group).count)
-        }
-        let hasEmptyGroups = groupCounts.contains { $0.1 == 0 }
-        if hasEmptyGroups {
-            print("⚠️  Warning: Some emoji groups are empty")
-        } else {
-            print("✅ All emoji groups have content")
-        }
-    }
+    let hasEmptyGroups = groupCounts.contains { $0.1 == 0 }
+    #expect(!hasEmptyGroups)
+  }
 }
-
-// MARK: - Helper Extensions

@@ -1,0 +1,44 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16"
+
+      - name: Run tests
+        run: swift test --parallel
+
+  lint-and-format:
+    name: Code Quality
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: brew install swiftlint swift-format
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          swiftlint: true
+          swift_format_official: true
+          auto_fix: true
