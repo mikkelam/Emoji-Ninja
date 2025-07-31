@@ -37,7 +37,7 @@ public class EmojiSearchKit {
       [
         kSKProximityIndexing: true,  // Enable proximity searching
         kSKMinTermLength: 1,  // Allow single character searches
-        kSKMaximumTerms: 2000,  // Plenty of terms for tags
+        kSKMaximumTerms: 2000  // Plenty of terms for tags
       ] as CFDictionary
 
     // Create the index
