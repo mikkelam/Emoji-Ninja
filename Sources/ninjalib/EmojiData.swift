@@ -180,19 +180,10 @@ public class EmojiDataManager {
     }
 
     private func loadEmojiData() {
-        guard let resourcePath = Bundle.main.resourcePath else {
-            fatalError("❌ Failed to find app resources path")
-        }
+        let bundle = Bundle.module
 
-        let bundlePath = URL(fileURLWithPath: resourcePath).appendingPathComponent(
-            "Emoji Ninja_ninjalib.bundle")
-
-        guard let resourceBundle = Bundle(url: bundlePath) else {
-            fatalError("❌ Failed to load resource bundle at \(bundlePath)")
-        }
-
-        guard let url = resourceBundle.url(forResource: "emoji_data", withExtension: "json") else {
-            fatalError("❌ Failed to find emoji_data.json in resource bundle")
+        guard let url = bundle.url(forResource: "emoji_data", withExtension: "json") else {
+            fatalError("❌ Failed to find emoji_data.json in bundle")
         }
 
         guard let data = try? Data(contentsOf: url) else {

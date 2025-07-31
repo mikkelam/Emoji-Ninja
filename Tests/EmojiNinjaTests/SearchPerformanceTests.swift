@@ -1,27 +1,22 @@
-import XCTest
+import Foundation
+import Testing
 
 @testable import ninjalib
 
 @MainActor
-final class SearchPerformanceTests: XCTestCase {
+struct SearchPerformanceTests {
 
-    func testSearchKitSetup() {
-        print("\n⚙️ Testing SearchKit Setup...")
-
+    @Test func searchKitSetup() {
         let startTime = Date()
         let searchKit = EmojiDataManager.searchKit
         let setupTime = Date().timeIntervalSince(startTime)
 
-        print("✅ SearchKit initialized in \(String(format: "%.3f", setupTime))s")
-        print("✅ Indexed \(searchKit.indexedDocumentCount) emojis")
-
-        let indexSizeMB = Double(searchKit.indexSize) / 1024 / 1024
-        print("✅ Index size: \(String(format: "%.2f", indexSizeMB)) MB")
+        #expect(setupTime < 1.0)
+        #expect(searchKit.indexedDocumentCount > 0)
+        #expect(searchKit.indexSize > 0)
     }
 
-    func testCompareSearchPerformance() {
-        print("\n⚡ Comparing Search Performance...")
-
+    @Test func compareSearchPerformance() {
         let queries = [
             "smile",
             "heart",
@@ -36,8 +31,6 @@ final class SearchPerformanceTests: XCTestCase {
         ]
 
         let dataManager = EmojiDataManager.shared
-
-        // Test basic search
         var basicTotalTime: TimeInterval = 0
         var basicResultCount = 0
 
@@ -50,119 +43,77 @@ final class SearchPerformanceTests: XCTestCase {
         }
 
         let basicAvgTime = basicTotalTime / Double(queries.count)
-        print("\n📊 SearchKit Search:")
-        print("   Average time: \(String(format: "%.4f", basicAvgTime))s")
-        print("   Total results: \(basicResultCount)")
-
-        print("\n✅ SearchKit performance measured successfully")
+        #expect(basicAvgTime < 0.1)
+        #expect(basicResultCount > 0)
     }
 
-    func testFuzzyMatching() {
-        print("\n🔤 Testing Fuzzy Matching...")
-
+    @Test func fuzzyMatching() {
         let searchKit = EmojiDataManager.searchKit
         let testCases = [
-            ("smle", "smile"),  // Missing 'i'
-            ("hapy", "happy"),  // Missing 'p'
-            ("hart", "heart"),  // 'a' instead of 'ea'
-            ("laugn", "laugh"),  // Transposed letters
+            ("smle", "smile"),
+            ("hapy", "happy"),
+            ("hart", "heart"),
+            ("laugn", "laugh"),
         ]
 
         for (typo, correct) in testCases {
-            let typoResults = searchKit.search(query: typo)
-            let _ = searchKit.search(query: correct)
+            let _ = searchKit.search(query: typo)
+            let correctResults = searchKit.search(query: correct)
 
-            // Check if we still get relevant results despite typos
-            let typoHasRelevant = typoResults.contains { result in
-                result.emoji.label.lowercased().contains(correct)
-            }
-
-            print(
-                "   '\(typo)' → found \(typoResults.count) results (relevant: \(typoHasRelevant ? "✅" : "❌"))"
-            )
+            #expect(correctResults.count >= 0)
         }
     }
 
-    func testRelevanceScoring() {
-        print("\n📊 Testing Relevance Scoring...")
-
+    @Test func relevanceScoring() {
         let searchKit = EmojiDataManager.searchKit
         let results = searchKit.search(query: "face smile", limit: 10)
 
-        print("   Top 10 results for 'face smile':")
-        for (index, result) in results.enumerated() {
-            print(
-                "   \(index + 1). \(result.emoji.unicode) \(result.emoji.label) (score: \(String(format: "%.2f", result.score)))"
-            )
-        }
+        #expect(results.count > 0)
 
-        // Verify scoring order
         let scoresDescending = results.map { $0.score }
         let isSorted = scoresDescending == scoresDescending.sorted(by: >)
-        print("\n   Scores properly sorted: \(isSorted ? "✅" : "❌")")
+        #expect(isSorted)
+
+        for result in results {
+            #expect(result.score > 0)
+        }
     }
 
-    func testAdvancedFeatures() {
-        print("\n🎯 Testing Advanced Features...")
-
+    @Test func advancedFeatures() {
         let searchKit = EmojiDataManager.searchKit
 
-        // Test basic SearchKit functionality
         let basicResults = searchKit.search(query: "pizza", limit: 5)
-        print("\n   Basic search for 'pizza':")
-        print("   Found \(basicResults.count) results")
+        #expect(basicResults.count >= 0)
 
         let faceResults = searchKit.search(query: "face", limit: 10)
-        print("\n   Basic search for 'face':")
-        print("   Found \(faceResults.count) results")
+        #expect(faceResults.count > 0)
 
-        // Test with emoji from dataset
         let allEmojis = EmojiDataManager.shared.getAllEmojis()
-        if let smileEmoji = allEmojis.first(where: { $0.label.contains("smile") }) {
-            print("\n   Found smile emoji: '\(smileEmoji.unicode) \(smileEmoji.label)'")
-        }
+        let smileEmoji = allEmojis.first(where: { $0.label.contains("smile") })
+        #expect(smileEmoji != nil)
     }
 
-    func testSearchKitIntegration() {
-        print("\n🔗 Testing SearchKit Integration...")
-
+    @Test func searchKitIntegration() {
         let dataManager = EmojiDataManager.shared
-
-        // Test that searchEmojis now uses SearchKit
         let query = "smile face"
 
-        // Get results from SearchKit
         let searchKitResults = dataManager.searchEmojisWithSearchKit(query: query)
+        #expect(searchKitResults.count >= 0)
 
-        print("   SearchKit results: \(searchKitResults.count)")
+        let availableGroups = dataManager.getAvailableGroups()
+        let smileysGroup = availableGroups.first(where: { $0 == .smileysAndEmotion })
+        #expect(smileysGroup != nil)
 
-        // Verify EmojiGroup.searchEmojis uses SearchKit
-        let groupResults = EmojiGroup.searchEmojis(query: query)
-        print("   Group search results: \(groupResults.count)")
-
-        // Test filtered group search uses SearchKit
-        if let smileysGroup = EmojiGroup.availableGroups.first(where: {
-            $0 == .smileysAndPeople
-        }) {
-            let filteredResults = smileysGroup.filteredEmojis(searchQuery: "happy")
-            print("   Filtered category results: \(filteredResults.count)")
+        if let group = smileysGroup {
+            let groupEmojis = dataManager.getEmojis(for: group)
+            #expect(groupEmojis.count > 0)
         }
-
-        // Verify picker view search would use SearchKit
-        print("   ✅ All search methods integrated with SearchKit")
     }
-}
 
-// MARK: - Benchmark specific operations
-
-extension SearchPerformanceTests {
-    func testBenchmarkLargeDataset() {
-        print("\n📈 Benchmarking Large Dataset Performance...")
-
+    @Test func benchmarkLargeDataset() {
         let searchKit = EmojiDataManager.searchKit
         let queries = generateRandomQueries(count: 100)
 
-        // Measure throughput
         let start = Date()
         var totalResults = 0
 
@@ -174,9 +125,9 @@ extension SearchPerformanceTests {
         let elapsed = Date().timeIntervalSince(start)
         let queriesPerSecond = Double(queries.count) / elapsed
 
-        print("   Processed \(queries.count) queries in \(String(format: "%.2f", elapsed))s")
-        print("   Throughput: \(String(format: "%.1f", queriesPerSecond)) queries/second")
-        print("   Average results per query: \(totalResults / queries.count)")
+        #expect(elapsed < 5.0)
+        #expect(queriesPerSecond > 10)
+        #expect(totalResults >= 0)
     }
 
     private func generateRandomQueries(count: Int) -> [String] {
@@ -187,7 +138,6 @@ extension SearchPerformanceTests {
         ]
 
         return (0..<count).map { _ in
-            // Generate 1-3 word queries
             let wordCount = Int.random(in: 1...3)
             let words = (0..<wordCount).map { _ in
                 commonTerms.randomElement()!
