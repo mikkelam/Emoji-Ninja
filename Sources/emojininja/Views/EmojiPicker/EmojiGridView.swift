@@ -21,7 +21,8 @@ struct EmojiGridView: View {
   }
 
   private var emojiData:
-    [(category: CategoryType, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)])] {
+    [(category: CategoryType, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)])]
+  {
     let allCategories = CategoryType.availableCategories
     let categories =
       viewModel.selectedCategory != nil ? [viewModel.selectedCategory!] : allCategories

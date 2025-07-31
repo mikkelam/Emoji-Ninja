@@ -27,7 +27,7 @@ struct SearchPerformanceTests {
       "red heart",
       "thinking",
       "party",
-      "star"
+      "star",
     ]
 
     let dataManager = EmojiDataManager.shared
@@ -53,7 +53,7 @@ struct SearchPerformanceTests {
       ("smle", "smile"),
       ("hapy", "happy"),
       ("hart", "heart"),
-      ("laugn", "laugh")
+      ("laugn", "laugh"),
     ]
 
     for (typo, correct) in testCases {
@@ -134,7 +134,7 @@ struct SearchPerformanceTests {
     let commonTerms = [
       "face", "smile", "heart", "love", "happy", "sad", "cry", "laugh",
       "fire", "star", "sun", "moon", "cat", "dog", "food", "drink",
-      "hand", "eye", "mouth", "red", "blue", "green", "party", "birthday"
+      "hand", "eye", "mouth", "red", "blue", "green", "party", "birthday",
     ]
 
     return (0..<count).map { _ in
