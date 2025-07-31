@@ -13,7 +13,7 @@ struct EmojiGridView: View {
     private var adaptiveColumns: [GridItem] {
         Array(
             repeating: GridItem(.adaptive(minimum: 60, maximum: 120), spacing: theme.spacing.small),
-            count: 8)
+            count: EmojiLayout.gridColumns)
     }
 
     private var emojiData:
@@ -45,20 +45,27 @@ struct EmojiGridView: View {
     }
 
     var body: some View {
-        ForEach(emojiData, id: \.category) { categoryData in
+        ForEach(Array(emojiData.enumerated()), id: \.element.category) {
+            sectionIndex, categoryData in
             Section {
                 LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
-                    ForEach(categoryData.emojiIndices, id: \.globalIndex) { emojiIndexData in
-                        EmojiButton(
+                    ForEach(
+                        Array(categoryData.emojiIndices.enumerated()), id: \.element.globalIndex
+                    ) {
+                        buttonIndex, emojiIndexData in
+                        let rowIndex = buttonIndex / EmojiLayout.gridColumns
+                        FastEmojiButton(
                             emojiData: emojiIndexData.emoji,
                             isSelected: emojiIndexData.globalIndex == selectedEmojiIndex,
                             geometry: geometry
                         ) {
                             onEmojiSelected(emojiIndexData.emoji)
                         }
+                        .zIndex(Double(sectionIndex * 10 + rowIndex))
                         .id("emoji_\(emojiIndexData.emoji.hexcode)")
                     }
                 }
+                .zIndex(Double(sectionIndex))
                 .id("grid_\(categoryData.category)")
             } header: {
                 HStack {

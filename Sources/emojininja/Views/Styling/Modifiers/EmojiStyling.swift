@@ -178,6 +178,28 @@ struct IconStyle: ViewModifier {
     }
 }
 
+// MARK: - Tooltip Style
+struct TooltipStyle: ViewModifier {
+    @Environment(\.theme) private var theme
+
+    func body(content: Content) -> some View {
+        content
+            .font(.caption)
+            .foregroundColor(theme.colors.text.primary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(theme.colors.background)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(theme.colors.border.secondary.opacity(0.3), lineWidth: 0.5)
+            )
+            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+    }
+}
+
 // MARK: - Supporting Types
 enum IconColor {
     case primary
@@ -226,6 +248,10 @@ extension View {
 
     func iconStyle(color: IconColor = .primary, size: IconSize = .medium) -> some View {
         modifier(IconStyle(color: color, size: size))
+    }
+
+    func tooltipStyle() -> some View {
+        modifier(TooltipStyle())
     }
 }
 

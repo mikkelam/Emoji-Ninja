@@ -6,6 +6,7 @@ struct EmojiPickerView: View {
     let onEmojiSelected: (EmojibaseEmoji) -> Void
     @ObservedObject var emojiManager: EmojiManager
     @StateObject private var viewModel: EmojiPickerViewModel
+    @StateObject private var tooltipManager = TooltipManager()
     @Environment(\.theme) private var theme
 
     init(
@@ -21,63 +22,53 @@ struct EmojiPickerView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // Search Bar
-                SearchBar(
-                    searchText: $viewModel.searchText,
-                    emojiManager: emojiManager,
-                    onKeyPress: viewModel.handleKeyPress,
-                    onSubmit: handleSubmit,
-                    onEscape: { emojiManager.hidePicker() }
-                )
+            ZStack {
+                VStack(spacing: 0) {
+                    // Search Bar
+                    SearchBar(
+                        searchText: $viewModel.searchText,
+                        emojiManager: emojiManager,
+                        onKeyPress: viewModel.handleKeyPress,
+                        onSubmit: handleSubmit,
+                        onEscape: { emojiManager.hidePicker() }
+                    )
 
-                // Category Filter Pills
-                if !viewModel.isInSearchMode {
-                    CategoryFilterView(selectedCategory: $viewModel.selectedCategory)
-                }
-
-                Divider()
-
-                // Emoji Content
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 4) {
-                            if !viewModel.isInSearchMode {
-                                // Category browsing mode
-                                EmojiGridView(
-                                    geometry: geometry,
-                                    selectedEmojiIndex: viewModel.selectedEmojiIndex,
-                                    selectedCategory: viewModel.selectedCategory,
-                                    onEmojiSelected: onEmojiSelected,
-                                    emojiManager: emojiManager,
-                                    viewModel: viewModel
-                                )
-                            } else {
-                                // Search results mode
-                                SearchResultsView(
-                                    geometry: geometry,
-                                    searchResults: viewModel.currentSearchResults,
-                                    selectedEmojiIndex: viewModel.selectedEmojiIndex,
-                                    searchResultsId: viewModel.searchResultsId,
-                                    onEmojiSelected: onEmojiSelected
-                                )
-                            }
-                        }
-                        .padding(.horizontal, theme.spacing.medium)
-                        .padding(.vertical, theme.spacing.xs)
+                    // Category Filter Pills
+                    if !viewModel.isInSearchMode {
+                        CategoryFilterView(selectedCategory: $viewModel.selectedCategory)
                     }
-                    .onChange(of: viewModel.selectedEmojiIndex) { _, newIndex in
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            if let currentEmoji = viewModel.getCurrentEmoji() {
-                                proxy.scrollTo(
-                                    "emoji_\(currentEmoji.hexcode)",
-                                    anchor: .center)
+
+                    Divider()
+
+                    // Emoji Content
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            LazyVStack(alignment: .leading, spacing: 4) {
+                                if !viewModel.isInSearchMode {
+                                    // Category browsing mode
+                                    EmojiGridView(
+                                        geometry: geometry,
+                                        selectedEmojiIndex: viewModel.selectedEmojiIndex,
+                                        selectedCategory: viewModel.selectedCategory,
+                                        onEmojiSelected: onEmojiSelected,
+                                        emojiManager: emojiManager,
+                                        viewModel: viewModel
+                                    )
+                                } else {
+                                    // Search results mode
+                                    SearchResultsView(
+                                        geometry: geometry,
+                                        searchResults: viewModel.currentSearchResults,
+                                        selectedEmojiIndex: viewModel.selectedEmojiIndex,
+                                        searchResultsId: viewModel.searchResultsId,
+                                        onEmojiSelected: onEmojiSelected
+                                    )
+                                }
                             }
+                            .padding(.horizontal, theme.spacing.medium)
+                            .padding(.vertical, theme.spacing.xs)
                         }
-                    }
-                    .onChange(of: viewModel.selectedCategory) { _, _ in
-                        // When category changes, scroll to the selected emoji
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        .onChange(of: viewModel.selectedEmojiIndex) { _, newIndex in
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 if let currentEmoji = viewModel.getCurrentEmoji() {
                                     proxy.scrollTo(
@@ -86,11 +77,28 @@ struct EmojiPickerView: View {
                                 }
                             }
                         }
+                        .onChange(of: viewModel.selectedCategory) { _, _ in
+                            // When category changes, scroll to the selected emoji
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    if let currentEmoji = viewModel.getCurrentEmoji() {
+                                        proxy.scrollTo(
+                                            "emoji_\(currentEmoji.hexcode)",
+                                            anchor: .center)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(theme.colors.background)
+                .coordinateSpace(name: "emojiPicker")
+                .environmentObject(tooltipManager)
+
+                // Global tooltip overlay
+                GlobalTooltipView(tooltipManager: tooltipManager)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(theme.colors.background)
         }
         .frame(width: windowSize.width, height: windowSize.height)
         .onKeyPress { keyPress in

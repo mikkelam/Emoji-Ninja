@@ -12,7 +12,7 @@ struct SearchResultsView: View {
     private var adaptiveColumns: [GridItem] {
         Array(
             repeating: GridItem(.adaptive(minimum: 60, maximum: 120), spacing: theme.spacing.small),
-            count: 8)
+            count: EmojiLayout.gridColumns)
     }
 
     var body: some View {
@@ -35,7 +35,7 @@ struct SearchResultsView: View {
                 LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
                     ForEach(Array(searchResults.enumerated()), id: \.element.hexcode) {
                         index, emoji in
-                        EmojiButton(
+                        FastEmojiButton(
                             emojiData: emoji,
                             isSelected: index == selectedEmojiIndex,
                             geometry: geometry

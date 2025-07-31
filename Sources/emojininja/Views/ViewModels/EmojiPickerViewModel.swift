@@ -58,7 +58,7 @@ class EmojiPickerViewModel: ObservableObject {
         let allEmojis = getAllEmojis()
         guard !allEmojis.isEmpty else { return .ignored }
 
-        let columns = 8
+        let columns = EmojiLayout.gridColumns
         let totalEmojis = allEmojis.count
 
         switch keyPress.key {
