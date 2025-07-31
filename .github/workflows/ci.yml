@@ -23,9 +23,11 @@ jobs:
       - name: Run tests
         run: swift test --parallel
 
-  lint:
+  lint-and-format:
     name: Code Quality
     runs-on: macos-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -39,3 +41,11 @@ jobs:
         with:
           swiftlint: true
           swift_format_official: true
+
+      - name: Auto-fix and commit
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "Auto-fix linting issues"
+          file_pattern: "Sources/ Tests/ Package.swift"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
