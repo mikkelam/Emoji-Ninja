@@ -13,7 +13,7 @@ struct CategoryFilterView: View {
           // All categories button
           CategoryPill(
             title: "All",
-            emoji: "🏷️",
+            emoji: "🥷",
             isSelected: selectedCategory == nil,
             action: { selectedCategory = nil }
           )
