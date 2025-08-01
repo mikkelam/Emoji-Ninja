@@ -29,7 +29,7 @@ let package = Package(
       ],
       path: "Sources/ninjalib",
       resources: [
-        .copy("../Resources")
+        .process("emoji_data.json")
       ]
     ),
     .executableTarget(
@@ -38,7 +38,10 @@ let package = Package(
         "ninjalib",
         "HotKey",
       ],
-      path: "Sources/emojininja"
+      path: "Sources/emojininja",
+      resources: [
+        .process("Resources")
+      ]
     ),
     .testTarget(
       name: "EmojiNinjaTests",

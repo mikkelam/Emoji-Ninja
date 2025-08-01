@@ -15,7 +15,13 @@ struct EmojiNinjaApp: App {
   }
 
   private var menuBarImage: NSImage {
-    guard let image = NSImage(named: "ninja_menu") else {
+    guard
+      let bundleURL = Bundle.main.url(
+        forResource: "Emoji Ninja_emoji", withExtension: "bundle"),
+      let bundle = Bundle(url: bundleURL),
+      let imageURL = bundle.url(forResource: "ninja_menu", withExtension: "png"),
+      let image = NSImage(contentsOf: imageURL)
+    else {
       fatalError("ninja_menu.png not found")
     }
     image.size = NSSize(width: 16, height: 16)

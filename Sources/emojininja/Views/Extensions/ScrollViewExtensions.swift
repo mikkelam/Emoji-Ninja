@@ -30,10 +30,13 @@ struct EmojiScrollTrackingModifier: ViewModifier {
       )
       .coordinateSpace(name: "emojiScrollCoordinate")
       .onPreferenceChange(EmojiScrollPositionPreferenceKey.self) { position in
-        handleScrollPositionChange(position)
+        Task { @MainActor in
+          handleScrollPositionChange(position)
+        }
       }
   }
 
+  @MainActor
   private func handleScrollPositionChange(_ position: CGPoint) {
     let hasScrolled = position != lastScrollPosition
 
