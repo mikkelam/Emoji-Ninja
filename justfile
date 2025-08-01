@@ -15,7 +15,7 @@ default:
 # Clean build artifacts
 clean:
     swift package clean
-    rm -rf {{build_dir}}/{{app_name}}.app
+    rm -rf {{build_dir}}
     rm -rf {{dist_dir}}
 
 # Build debug version
@@ -86,6 +86,15 @@ _create-bundle mode="debug":
             cp -R "$bundle" "$resources_dir/"
         fi
     done
+
+    # Copy app icon from BuildResources
+    echo "🎨 Copying app icon..."
+    if [ -f "BuildResources/ninja.png" ]; then
+        cp "BuildResources/ninja.png" "$resources_dir/"
+        echo "✅ App icon copied"
+    else
+        echo "⚠️  App icon not found in BuildResources"
+    fi
 
     echo "✅ App bundle created at: $app_dir"
 
