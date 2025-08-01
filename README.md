@@ -20,38 +20,43 @@ Free and open source. Forever.
 ## Downloads
 Pre-built application bundles can be downloaded from [GitHub Releases](https://github.com/mikkelam/emoji-ninja/releases/).
 
-Note that the app bundles are not signed and notarised (as I'm currently not paying Apple for the privilege), so you'll need to [disable Gatekeeper](https://disable-gatekeeper.github.io) for Emoji Ninja. I apologize for this inconvenience.
+**Installation:** Since the app is unsigned (keeping it free!), macOS will show a security warning on first launch.
+
+**To install:**
+1. Download and extract the app to Applications
+2. **Right-click** the app and select **"Open"**
+3. Click **"Open"** in the security dialog
+4. The app will now launch normally in the future
+
+This is the standard process for many free Mac apps and only needs to be done once.
 
 ### Build from Source
 
-build and run:
-```bash
-./build.sh --run
-```
-
-### Requirements
-
+**Requirements:**
 - macOS 14.0+
 - Swift 6.0+
+- [just](https://github.com/casey/just) command runner: `brew install just`
 
-# Development
-This project is Xcode free 🙂‍↕️
-
-## Build Options
-
-The included build script supports various options:
-
+**Install to /Applications:**
 ```bash
-./build.sh [OPTIONS]
-
-Options:
-  -r, --run         Run the app after building
-  --release         Build in release mode
-  --clean           Clean build artifacts before building
-  --app-bundle      Create a proper .app bundle (default with -r )
-  -h, --help        Show help message
+just install
 ```
 
+**Development workflow:**
+```bash
+just dev    # Build and run with console logs visible
+```
+
+## Development
+
+This project is Xcode-free! All builds use Swift Package Manager via `just` commands.
+
+**Essential commands:**
+- `just dev` - Build debug version and run (shows console output for debugging)
+- `just run` - Build and run debug version
+- `just install` - Build release version and install to /Applications
+- `just clean` - Clean build artifacts
+- `just -l` - Show all available commands
 
 ## License
 
