@@ -83,7 +83,7 @@ _create-bundle mode="debug":
     for bundle in "$bundle_source"/*.bundle; do
         if [ -d "$bundle" ]; then
             echo "📦 Copying $(basename "$bundle")"
-            cp -R "$bundle" "$resources_dir/"
+            cp -R "$bundle" "$app_dir/"
         fi
     done
 
