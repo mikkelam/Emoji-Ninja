@@ -188,6 +188,10 @@ status:
     @test -d {{build_dir}} && echo "📁 Build directory exists" || echo "📁 No build directory"
     @test -d "{{build_dir}}/{{app_name}}.app" && echo "📱 App bundle exists" || echo "📱 No app bundle"
 
+# Get current version
+get-version:
+    @echo "{{version}}"
+
 # Aliases for convenience
 alias b := build
 alias br := build-release

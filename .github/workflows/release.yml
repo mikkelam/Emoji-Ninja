@@ -24,24 +24,26 @@ jobs:
         with:
           xcode-version: "16"
 
-      # extract semver from VERSION file
-      - name: Extract version
-        id: version
-        run: echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
+      - name: Install just
+        uses: taiki-e/install-action@just
 
-      - name: Create distribution package
-        run: ./distribute.sh
+      - name: Build distribution packages
+        run: just dist
+
+      - name: Get version from justfile
+        id: version
+        run: echo "version=$(just get-version)" >> $GITHUB_OUTPUT
 
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v3
         with:
-          name: EmojiNinja-${{ steps.version.outputs.version }}-dmg
+          name: EmojiNinja-v${{ steps.version.outputs.version }}-dmg
           path: dist/*.dmg
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v3
         with:
-          name: EmojiNinja-${{ steps.version.outputs.version }}-zip
+          name: EmojiNinja-v${{ steps.version.outputs.version }}-zip
           path: dist/*.zip
 
       - name: Upload checksums
@@ -58,7 +60,7 @@ jobs:
             dist/*.dmg
             dist/*.zip
             dist/checksums.txt
-          body_path: dist/RELEASE_NOTES.md
+          generate_release_notes: true
           draft: false
           prerelease: false
         env:
