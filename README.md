@@ -1,4 +1,5 @@
 # Emoji Ninja 🥷
+[![Tests](https://github.com/mikkelam/Emoji-Ninja/actions/workflows/ci.yml/badge.svg)](https://github.com/mikkelam/Emoji-Ninja/actions/workflows/ci.yml)
 
 Become the emoji master in any chat🤙
 
