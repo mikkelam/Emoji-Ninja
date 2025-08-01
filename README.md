@@ -31,6 +31,18 @@ Pre-built application bundles can be downloaded from [GitHub Releases](https://g
 
 This is the standard process for many free Mac apps and only needs to be done once.
 
+**Troubleshooting:** If you get a "damaged and can't be opened" error instead, try either:
+
+**Option 1 - System Settings:**
+Go to System Settings → Privacy & Security → scroll down to find "Emoji Ninja" and click "Open Anyway"
+
+**Option 2 - Terminal command:**
+```bash
+xattr -d com.apple.quarantine "/Applications/Emoji Ninja.app"
+```
+
+Both methods remove the quarantine flag that triggers the stronger security block. The app isn't actually damaged - this is just macOS being extra cautious with unsigned apps. This is needed because I don't pay the apple developer tax.
+
 ### Build from Source
 
 **Requirements:**
