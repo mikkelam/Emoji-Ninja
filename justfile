@@ -150,17 +150,17 @@ _checksums:
 
 
 # Full distribution build (DMG + ZIP)
-dist: bundle-release _create-zip _create-dmg _checksums
+dist: _create-zip _create-dmg _checksums
     @echo "🎉 Distribution complete!"
     @echo "📦 Files in {{dist_dir}}:"
     @ls -la {{dist_dir}}/
 
 # Create only ZIP distribution
-dist-zip: bundle-release _create-zip _checksums
+dist-zip: _create-zip _checksums
     @echo "📦 ZIP distribution ready in {{dist_dir}}/"
 
 # Create only DMG distribution
-dist-dmg: bundle-release _create-dmg _checksums
+dist-dmg: _create-dmg _checksums
     @echo "💿 DMG distribution ready in {{dist_dir}}/"
 
 # Development workflow - build and run quickly
@@ -168,6 +168,16 @@ dev: run
 
 # Release workflow - clean build and test
 release: run-release
+
+# Install to /Applications
+install: bundle-release
+    @echo "📲 Installing {{app_name}} to /Applications..."
+    @if [ -d "/Applications/{{app_name}}.app" ]; then \
+        echo "🗑️ Removing existing installation..."; \
+        rm -rf "/Applications/{{app_name}}.app"; \
+    fi
+    cp -R "{{build_dir}}/{{app_name}}.app" "/Applications/"
+    @echo "✅ {{app_name}} installed to /Applications"
 
 # Check project status
 status:
@@ -177,3 +187,11 @@ status:
     @test -f Sources/Resources/emoji_data.json && echo "✅ Emoji data present" || echo "❌ Emoji data missing (run 'just fetch-emoji')"
     @test -d {{build_dir}} && echo "📁 Build directory exists" || echo "📁 No build directory"
     @test -d "{{build_dir}}/{{app_name}}.app" && echo "📱 App bundle exists" || echo "📱 No app bundle"
+
+# Aliases for convenience
+alias b := build
+alias br := build-release
+alias r := run
+alias rr := run-release
+alias d := dev
+alias i := install
