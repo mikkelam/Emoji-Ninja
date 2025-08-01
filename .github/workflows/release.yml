@@ -11,8 +11,12 @@ on:
         required: true
         default: "0.0.1"
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
-  build-macos:
+  build-and-release:
     runs-on: macos-latest
 
     steps:
