@@ -32,6 +32,10 @@ build-release:
 build-clean mode="debug": clean
     @if [ "{{mode}}" = "release" ]; then just build-release; else just build; fi
 
+test:
+    @echo "🧪 Running tests..."
+    swift test --parallel
+
 # Kill any running instances
 kill:
     #!/usr/bin/env bash
@@ -68,25 +72,20 @@ _create-bundle mode="debug":
     # Copy Info.plist
     cp "BuildResources/Info.plist" "$contents_dir/Info.plist"
 
-    # Copy icons (optional)
-    for icon in ninja.png ninja_menu.png ninja_menu@2x.png ninja_menu@3x.png; do
-        if [ -f "BuildResources/$icon" ]; then
-            echo "🎨 Copying $icon"
-            cp "BuildResources/$icon" "$resources_dir/"
+    # Copy SPM resource bundles
+    echo "📦 Copying SPM resource bundles..."
+    if [ "{{mode}}" = "release" ]; then
+        bundle_source="{{build_dir}}/release"
+    else
+        bundle_source="{{build_dir}}/arm64-apple-macosx/debug"
+    fi
+
+    for bundle in "$bundle_source"/*.bundle; do
+        if [ -d "$bundle" ]; then
+            echo "📦 Copying $(basename "$bundle")"
+            cp -R "$bundle" "$resources_dir/"
         fi
     done
-
-    # Copy emoji data
-    echo "📦 Copying emoji data..."
-    if [ -f "Sources/Resources/emoji_data.json" ]; then
-        bundle_dir="$resources_dir/{{app_name}}_ninjalib.bundle"
-        mkdir -p "$bundle_dir"
-        cp "Sources/Resources/emoji_data.json" "$bundle_dir/"
-        echo "✅ Emoji data copied"
-    else
-        echo "❌ emoji_data.json not found - run 'just fetch-emoji' first"
-        exit 1
-    fi
 
     echo "✅ App bundle created at: $app_dir"
 
@@ -184,7 +183,7 @@ status:
     @echo "📊 Project Status:"
     @echo "Version: {{version}}"
     @echo "App name: {{app_name}}"
-    @test -f Sources/Resources/emoji_data.json && echo "✅ Emoji data present" || echo "❌ Emoji data missing (run 'just fetch-emoji')"
+    @test -f Sources/ninjalib/emoji_data.json && echo "✅ Emoji data present" || echo "❌ Emoji data missing (run 'just fetch-emoji')"
     @test -d {{build_dir}} && echo "📁 Build directory exists" || echo "📁 No build directory"
     @test -d "{{build_dir}}/{{app_name}}.app" && echo "📱 App bundle exists" || echo "📱 No app bundle"
 
