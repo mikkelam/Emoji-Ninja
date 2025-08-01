@@ -6,7 +6,7 @@ app_name := "Emoji Ninja"
 build_dir := ".build"
 dist_dir := "dist"
 version := `cat VERSION 2>/dev/null || echo "1.0.0"`
-signing_identity := env_var_or_default("SIGNING_IDENTITY", "-")
+
 
 # List all available commands
 default:
@@ -117,21 +117,17 @@ fetch-emoji:
     @echo "📥 Fetching emoji data..."
     bash "fetch_emoji_data.sh"
 
-# Basic code signing (ad-hoc)
-_sign:
-    #!/usr/bin/env bash
-    echo "✍️ Code signing app with {{signing_identity}}..."
-    codesign --force --deep --sign "{{signing_identity}}" "{{build_dir}}/{{app_name}}.app" || echo "⚠️ Code signing failed"
+
 
 # Create ZIP archive for distribution
-_create-zip: _sign
+_create-zip: bundle-release
     @echo "📦 Creating ZIP archive..."
     mkdir -p {{dist_dir}}
     cd {{build_dir}} && zip -r "../{{dist_dir}}/EmojiNinja-v{{version}}-macos.zip" "{{app_name}}.app"
     @echo "✅ ZIP created: {{dist_dir}}/EmojiNinja-v{{version}}-macos.zip"
 
 # Create DMG for distribution
-_create-dmg: _sign
+_create-dmg: bundle-release
     @echo "💿 Creating DMG..."
     rm -rf "{{dist_dir}}/EmojiNinja-v{{version}}.dmg" "{{dist_dir}}/dmg_staging"
     mkdir -p "{{dist_dir}}/dmg_staging"
@@ -180,4 +176,4 @@ status:
     @echo "App name: {{app_name}}"
     @test -f Sources/Resources/emoji_data.json && echo "✅ Emoji data present" || echo "❌ Emoji data missing (run 'just fetch-emoji')"
     @test -d {{build_dir}} && echo "📁 Build directory exists" || echo "📁 No build directory"
-    @test -d {{build_dir}}/{{app_name}}.app && echo "📱 App bundle exists" || echo "📱 No app bundle"
+    @test -d "{{build_dir}}/{{app_name}}.app" && echo "📱 App bundle exists" || echo "📱 No app bundle"
