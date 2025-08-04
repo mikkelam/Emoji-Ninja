@@ -1,7 +1,7 @@
 # Emoji Ninja 🥷
 [![Tests](https://github.com/mikkelam/Emoji-Ninja/actions/workflows/ci.yml/badge.svg)](https://github.com/mikkelam/Emoji-Ninja/actions/workflows/ci.yml)
 
-Become the emoji master in any chat🤙
+Become the emoji master in any chat 🤙
 
 A performant macOS emoji picker. No fuss, just find emojis. Fast.
 
@@ -11,7 +11,7 @@ A performant macOS emoji picker. No fuss, just find emojis. Fast.
 
 - **Fast Search**: Find your favorite emoji with ease 🔍️
 - **Keyboard Navigation**: Arrow keys + Enter for selection ⌨️
-- **Smart pop**: The window pops next to your cursor if you prefer to use your mouse 🖱️
+- **Smart Pop**: The window pops next to your cursor if you prefer to use your mouse 🖱️
 - **Skin Tone Support**: Choose from different skin tones 🌈
 - **Global Hotkey**: Quick access with `⌘⌃Space` 🔥🔑
 - **100% Offline**
@@ -41,7 +41,7 @@ Go to System Settings → Privacy & Security → scroll down to find "Emoji Ninj
 xattr -d com.apple.quarantine "/Applications/Emoji Ninja.app"
 ```
 
-Both methods remove the quarantine flag that triggers the stronger security block. The app isn't actually damaged - this is just macOS being extra cautious with unsigned apps. This is needed because I don't pay the apple developer tax.
+Both methods remove the quarantine flag that triggers the stronger security block. The app isn't actually damaged - this is just macOS being extra cautious with unsigned apps. This is needed because I don't pay the Apple developer tax.
 
 ### Build from Source
 
@@ -53,11 +53,6 @@ Both methods remove the quarantine flag that triggers the stronger security bloc
 **Install to /Applications:**
 ```bash
 just install
-```
-
-**Development workflow:**
-```bash
-just dev    # Build and run with console logs visible
 ```
 
 ## Development
