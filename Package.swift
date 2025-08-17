@@ -40,7 +40,8 @@ let package = Package(
       ],
       path: "Sources/emojininja",
       resources: [
-        .process("Resources")
+
+        .process("Assets.xcassets")
       ]
     ),
     .testTarget(
