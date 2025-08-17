@@ -1,12 +1,11 @@
 # Emoji Ninja Build Automation
 # Replace scary bash scripts with clean, composable commands
-
 # Configuration
+
 app_name := "Emoji Ninja"
 build_dir := ".build"
 dist_dir := "dist"
 version := `cat VERSION 2>/dev/null || echo "1.0.0"`
-
 
 # List all available commands
 default:
@@ -15,8 +14,8 @@ default:
 # Clean build artifacts
 clean:
     swift package clean
-    rm -rf {{build_dir}}
-    rm -rf {{dist_dir}}
+    rm -rf {{ build_dir }}
+    rm -rf {{ dist_dir }}
 
 # Build debug version
 build:
@@ -30,7 +29,7 @@ build-release:
 
 # Build with clean first
 build-clean mode="debug": clean
-    @if [ "{{mode}}" = "release" ]; then just build-release; else just build; fi
+    @if [ "{{ mode }}" = "release" ]; then just build-release; else just build; fi
 
 test:
     @echo "🧪 Running tests..."
@@ -40,9 +39,9 @@ test:
 kill:
     #!/usr/bin/env bash
     echo "🔪 Killing existing instances..."
-    pkill -f "{{app_name}}" || true
-    pkill -f ".build/debug/{{app_name}}" || true
-    pkill -f ".build/release/{{app_name}}" || true
+    pkill -f "{{ app_name }}" || true
+    pkill -f ".build/debug/{{ app_name }}" || true
+    pkill -f ".build/release/{{ app_name }}" || true
     sleep 0.5
 
 # Create app bundle structure
@@ -50,13 +49,13 @@ _create-bundle mode="debug":
     #!/usr/bin/env bash
     echo "📱 Creating app bundle..."
 
-    if [ "{{mode}}" = "release" ]; then
-        executable_path="{{build_dir}}/release/{{app_name}}"
+    if [ "{{ mode }}" = "release" ]; then
+        executable_path="{{ build_dir }}/release/{{ app_name }}"
     else
-        executable_path="{{build_dir}}/debug/{{app_name}}"
+        executable_path="{{ build_dir }}/debug/{{ app_name }}"
     fi
 
-    app_dir="{{build_dir}}/{{app_name}}.app"
+    app_dir="{{ build_dir }}/{{ app_name }}.app"
     contents_dir="$app_dir/Contents"
     macos_dir="$contents_dir/MacOS"
     resources_dir="$contents_dir/Resources"
@@ -66,18 +65,18 @@ _create-bundle mode="debug":
     mkdir -p "$macos_dir" "$resources_dir"
 
     # Copy executable
-    cp "$executable_path" "$macos_dir/{{app_name}}"
-    chmod +x "$macos_dir/{{app_name}}"
+    cp "$executable_path" "$macos_dir/{{ app_name }}"
+    chmod +x "$macos_dir/{{ app_name }}"
 
     # Copy Info.plist
     cp "BuildResources/Info.plist" "$contents_dir/Info.plist"
 
     # Copy SPM resource bundles
     echo "📦 Copying SPM resource bundles..."
-    if [ "{{mode}}" = "release" ]; then
-        bundle_source="{{build_dir}}/release"
+    if [ "{{ mode }}" = "release" ]; then
+        bundle_source="{{ build_dir }}/release"
     else
-        bundle_source="{{build_dir}}/arm64-apple-macosx/debug"
+        bundle_source="{{ build_dir }}/arm64-apple-macosx/debug"
     fi
 
     for bundle in "$bundle_source"/*.bundle; do
@@ -87,13 +86,18 @@ _create-bundle mode="debug":
         fi
     done
 
-    # Copy app icon from BuildResources
-    echo "🎨 Copying app icon..."
-    if [ -f "BuildResources/ninja.png" ]; then
-        cp "BuildResources/ninja.png" "$resources_dir/"
-        echo "✅ App icon copied"
+    # Compile app icon (and any other assets) into main bundle
+    if [ -d "Sources/emojininja/Assets.xcassets" ]; then
+        xcrun actool \
+            --compile "$resources_dir" \
+            --platform macosx \
+            --minimum-deployment-target 14.0 \
+            --app-icon "AppIcon" \
+            --output-partial-info-plist "$contents_dir/assetcatalog_generated_info.plist" \
+            "Sources/emojininja/Assets.xcassets"
+        echo "✅ Compiled asset catalog into Assets.car"
     else
-        echo "⚠️  App icon not found in BuildResources"
+        echo "⚠️ Assets.xcassets not found; app icon may be missing"
     fi
 
     echo "✅ App bundle created at: $app_dir"
@@ -108,68 +112,64 @@ bundle-release: build-release
 
 # Run debug version
 run: bundle kill
-    @echo "🏃 Launching {{app_name}}..."
-    "{{build_dir}}/{{app_name}}.app/Contents/MacOS/{{app_name}}"
+    @echo "🏃 Launching {{ app_name }}..."
+    "{{ build_dir }}/{{ app_name }}.app/Contents/MacOS/{{ app_name }}"
 
 # Run release version
 run-release: bundle-release kill
-    @echo "🏃 Launching {{app_name}} (release)..."
-    "{{build_dir}}/{{app_name}}.app/Contents/MacOS/{{app_name}}"
+    @echo "🏃 Launching {{ app_name }} (release)..."
+    "{{ build_dir }}/{{ app_name }}.app/Contents/MacOS/{{ app_name }}"
 
 # Open app bundle in Finder
 open: bundle
-    open "{{build_dir}}/{{app_name}}.app"
+    open "{{ build_dir }}/{{ app_name }}.app"
 
 # Fetch emoji data (if needed)
 fetch-emoji:
     @echo "📥 Fetching emoji data..."
     bash "fetch_emoji_data.sh"
 
-
-
 # Create ZIP archive for distribution
 _create-zip: bundle-release
     @echo "📦 Creating ZIP archive..."
-    mkdir -p {{dist_dir}}
-    cd {{build_dir}} && zip -r "../{{dist_dir}}/EmojiNinja-v{{version}}-macos.zip" "{{app_name}}.app"
-    @echo "✅ ZIP created: {{dist_dir}}/EmojiNinja-v{{version}}-macos.zip"
+    mkdir -p {{ dist_dir }}
+    cd {{ build_dir }} && zip -r "../{{ dist_dir }}/EmojiNinja-v{{ version }}-macos.zip" "{{ app_name }}.app"
+    @echo "✅ ZIP created: {{ dist_dir }}/EmojiNinja-v{{ version }}-macos.zip"
 
 # Create DMG for distribution
 _create-dmg: bundle-release
     @echo "💿 Creating DMG..."
-    rm -rf "{{dist_dir}}/EmojiNinja-v{{version}}.dmg" "{{dist_dir}}/dmg_staging"
-    mkdir -p "{{dist_dir}}/dmg_staging"
+    rm -rf "{{ dist_dir }}/EmojiNinja-v{{ version }}.dmg" "{{ dist_dir }}/dmg_staging"
+    mkdir -p "{{ dist_dir }}/dmg_staging"
 
     # Copy app and create Applications symlink
-    cp -R "{{build_dir}}/{{app_name}}.app" "{{dist_dir}}/dmg_staging/"
-    ln -s /Applications "{{dist_dir}}/dmg_staging/Applications"
+    cp -R "{{ build_dir }}/{{ app_name }}.app" "{{ dist_dir }}/dmg_staging/"
+    ln -s /Applications "{{ dist_dir }}/dmg_staging/Applications"
 
     # Create DMG
-    hdiutil create -srcfolder "{{dist_dir}}/dmg_staging" -format UDZO -volname "EmojiNinja-v{{version}}" "{{dist_dir}}/EmojiNinja-v{{version}}.dmg"
-    rm -rf "{{dist_dir}}/dmg_staging"
+    hdiutil create -srcfolder "{{ dist_dir }}/dmg_staging" -format UDZO -volname "EmojiNinja-v{{ version }}" "{{ dist_dir }}/EmojiNinja-v{{ version }}.dmg"
+    rm -rf "{{ dist_dir }}/dmg_staging"
 
-    @echo "✅ DMG created: {{dist_dir}}/EmojiNinja-v{{version}}.dmg"
+    @echo "✅ DMG created: {{ dist_dir }}/EmojiNinja-v{{ version }}.dmg"
 
 # Create checksums for distribution files
 _checksums:
     @echo "🔍 Creating checksums..."
-    cd {{dist_dir}} && shasum -a 256 *.dmg *.zip 2>/dev/null > checksums.txt || echo "No files to checksum"
-
-
+    cd {{ dist_dir }} && shasum -a 256 *.dmg *.zip 2>/dev/null > checksums.txt || echo "No files to checksum"
 
 # Full distribution build (DMG + ZIP)
 dist: _create-zip _create-dmg _checksums
     @echo "🎉 Distribution complete!"
-    @echo "📦 Files in {{dist_dir}}:"
-    @ls -la {{dist_dir}}/
+    @echo "📦 Files in {{ dist_dir }}:"
+    @ls -la {{ dist_dir }}/
 
 # Create only ZIP distribution
 dist-zip: _create-zip _checksums
-    @echo "📦 ZIP distribution ready in {{dist_dir}}/"
+    @echo "📦 ZIP distribution ready in {{ dist_dir }}/"
 
 # Create only DMG distribution
 dist-dmg: _create-dmg _checksums
-    @echo "💿 DMG distribution ready in {{dist_dir}}/"
+    @echo "💿 DMG distribution ready in {{ dist_dir }}/"
 
 # Development workflow - build and run quickly
 dev: run
@@ -179,28 +179,29 @@ release: run-release
 
 # Install to /Applications
 install: bundle-release
-    @echo "📲 Installing {{app_name}} to /Applications..."
-    @if [ -d "/Applications/{{app_name}}.app" ]; then \
+    @echo "📲 Installing {{ app_name }} to /Applications..."
+    @if [ -d "/Applications/{{ app_name }}.app" ]; then \
         echo "🗑️ Removing existing installation..."; \
-        rm -rf "/Applications/{{app_name}}.app"; \
+        rm -rf "/Applications/{{ app_name }}.app"; \
     fi
-    cp -R "{{build_dir}}/{{app_name}}.app" "/Applications/"
-    @echo "✅ {{app_name}} installed to /Applications"
+    cp -R "{{ build_dir }}/{{ app_name }}.app" "/Applications/"
+    @echo "✅ {{ app_name }} installed to /Applications"
 
 # Check project status
 status:
     @echo "📊 Project Status:"
-    @echo "Version: {{version}}"
-    @echo "App name: {{app_name}}"
+    @echo "Version: {{ version }}"
+    @echo "App name: {{ app_name }}"
     @test -f Sources/ninjalib/emoji_data.json && echo "✅ Emoji data present" || echo "❌ Emoji data missing (run 'just fetch-emoji')"
-    @test -d {{build_dir}} && echo "📁 Build directory exists" || echo "📁 No build directory"
-    @test -d "{{build_dir}}/{{app_name}}.app" && echo "📱 App bundle exists" || echo "📱 No app bundle"
+    @test -d {{ build_dir }} && echo "📁 Build directory exists" || echo "📁 No build directory"
+    @test -d "{{ build_dir }}/{{ app_name }}.app" && echo "📱 App bundle exists" || echo "📱 No app bundle"
 
 # Get current version
 get-version:
-    @echo "{{version}}"
+    @echo "{{ version }}"
 
 # Aliases for convenience
+
 alias b := build
 alias br := build-release
 alias r := run
