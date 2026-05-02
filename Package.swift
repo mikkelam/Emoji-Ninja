@@ -18,15 +18,11 @@ let package = Package(
       targets: ["emoji"]
     ),
   ],
-  dependencies: [
-    .package(url: "https://github.com/soffes/HotKey", from: "0.2.0")
-  ],
+  dependencies: [],
   targets: [
     .target(
       name: "ninjalib",
-      dependencies: [
-        "HotKey"
-      ],
+      dependencies: [],
       path: "Sources/ninjalib",
       resources: [
         .process("emoji_data.json")
@@ -36,7 +32,6 @@ let package = Package(
       name: "emoji",
       dependencies: [
         "ninjalib",
-        "HotKey",
       ],
       path: "Sources/emojininja",
       resources: [

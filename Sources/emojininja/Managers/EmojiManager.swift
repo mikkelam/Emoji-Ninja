@@ -1,6 +1,6 @@
 import AppKit
 @preconcurrency import Combine
-@preconcurrency import HotKey
+import Carbon
 import SwiftUI
 import ninjalib
 
@@ -11,7 +11,8 @@ class EmojiManager: ObservableObject {
   @Published var shouldResetSearch = false
 
   private var pickerWindow: NSWindow?
-  private nonisolated(unsafe) var showPickerHotKey: HotKey?
+  private nonisolated(unsafe) var hotKeyRef: EventHotKeyRef?
+  private nonisolated(unsafe) var hotKeyHandlerRef: EventHandlerRef?
   private nonisolated(unsafe) var themeObserver: AnyCancellable?
   private var previousApp: NSRunningApplication?
   private var lastScreenFrame: CGRect?
@@ -217,11 +218,53 @@ class EmojiManager: ObservableObject {
   }
 
   private func setupHotKey() {
-    showPickerHotKey = HotKey(key: .space, modifiers: [.command, .control])
-    showPickerHotKey?.keyDownHandler = { [weak self] in
-      Task { @MainActor in
-        self?.showPicker()
-      }
+    let eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+    let hotKeyID = EventHotKeyID(signature: OSType(fourCharCode("EMNJ")), id: 1)
+
+    let status = InstallEventHandler(
+      GetEventDispatcherTarget(),
+      { _, event, userData in
+        guard let event else { return noErr }
+        var receivedHotKeyID = EventHotKeyID()
+        let copyStatus = GetEventParameter(
+          event,
+          EventParamName(kEventParamDirectObject),
+          EventParamType(typeEventHotKeyID),
+          nil,
+          MemoryLayout<EventHotKeyID>.size,
+          nil,
+          &receivedHotKeyID
+        )
+        guard copyStatus == noErr, receivedHotKeyID.signature == OSType(fourCharCode("EMNJ")), receivedHotKeyID.id == 1 else {
+          return noErr
+        }
+        guard let userData else { return noErr }
+        let manager = Unmanaged<EmojiManager>.fromOpaque(userData).takeUnretainedValue()
+        Task { @MainActor in
+          manager.showPicker()
+        }
+        return noErr
+      },
+      1,
+      [eventType],
+      Unmanaged.passUnretained(self).toOpaque(),
+      &hotKeyHandlerRef
+    )
+    guard status == noErr else {
+      print("❌ Failed to install hotkey handler: \(status)")
+      return
+    }
+
+    let registerStatus = RegisterEventHotKey(
+      UInt32(kVK_Space),
+      UInt32(cmdKey | controlKey),
+      hotKeyID,
+      GetEventDispatcherTarget(),
+      0,
+      &hotKeyRef
+    )
+    if registerStatus != noErr {
+      print("❌ Failed to register hotkey: \(registerStatus)")
     }
   }
 
@@ -241,7 +284,16 @@ class EmojiManager: ObservableObject {
   }
 
   deinit {
-    showPickerHotKey = nil
+    if let hotKeyRef {
+      UnregisterEventHotKey(hotKeyRef)
+    }
+    if let hotKeyHandlerRef {
+      RemoveEventHandler(hotKeyHandlerRef)
+    }
     themeObserver?.cancel()
   }
+}
+
+private func fourCharCode(_ string: String) -> FourCharCode {
+  string.utf8.reduce(0) { ($0 << 8) + FourCharCode($1) }
 }
