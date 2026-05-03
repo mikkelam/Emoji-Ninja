@@ -62,8 +62,9 @@ lint:
     swift format lint -r Sources Tests Package.swift
     swiftlint
 
-format:
+tidy:
     swift format -i -r Sources Tests Package.swift
+    swiftlint --fix
 
 install: archive
     rm -rf "/Applications/{{ app_name }}"

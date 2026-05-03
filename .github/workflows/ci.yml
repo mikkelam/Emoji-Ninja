@@ -26,8 +26,8 @@ jobs:
       - name: Run tests
         run: just test
 
-  lint-and-format:
-    name: Code Quality
+  lint:
+    name: Lint
     runs-on: macos-latest
     permissions:
       contents: write
@@ -44,5 +44,5 @@ jobs:
       - name: Setup mise tools
         uses: jdx/mise-action@v2
 
-      - name: Run linters
+      - name: Run lint
         run: just lint
