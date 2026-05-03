@@ -16,17 +16,21 @@ class EmojiPickerViewModel: ObservableObject {
   private let dataSource: EmojiDataSource
   private var dataSnapshot: EmojiDataSnapshot = .empty
   private var navigator = EmojiNavigator()
-  private var isManualScrollMode = false
-  private var lastKeyboardNavigationAt = Date.distantPast
-  private let keyboardScrollGraceInterval: TimeInterval = 0.2
 
   var isInSearchMode: Bool {
     return searchText.count >= 2
   }
 
-  init(emojiManager: EmojiManager) {
+  convenience init(emojiManager: EmojiManager) {
+    self.init(
+      emojiManager: emojiManager,
+      dataSource: EmojiDataSource(repository: DefaultEmojiRepository())
+    )
+  }
+
+  init(emojiManager: EmojiManager, dataSource: EmojiDataSource) {
     self.emojiManager = emojiManager
-    self.dataSource = EmojiDataSource(repository: DefaultEmojiRepository())
+    self.dataSource = dataSource
     setupObservers()
     refreshDataSnapshot()
   }
@@ -53,23 +57,22 @@ class EmojiPickerViewModel: ObservableObject {
   }
 
   func handleKeyPress(_ keyPress: KeyPress) -> KeyPress.Result {
+    switch keyPress.key {
+    case .upArrow: return handleNavigationAction(.moveUp) ? .handled : .ignored
+    case .downArrow: return handleNavigationAction(.moveDown) ? .handled : .ignored
+    case .leftArrow: return handleNavigationAction(.moveLeft) ? .handled : .ignored
+    case .rightArrow: return handleNavigationAction(.moveRight) ? .handled : .ignored
+    default: return .ignored
+    }
+  }
+
+  @discardableResult
+  func handleNavigationAction(_ action: EmojiNavigationAction) -> Bool {
     let allEmojis = dataSnapshot.flatEmojis
-    guard !allEmojis.isEmpty else { return .ignored }
+    guard !allEmojis.isEmpty else { return false }
 
     let columns = EmojiLayout.gridColumns
     let sectionCounts = dataSnapshot.sectionCounts
-    let action: EmojiNavigationAction
-
-    switch keyPress.key {
-    case .upArrow: action = .moveUp
-    case .downArrow: action = .moveDown
-    case .leftArrow: action = .moveLeft
-    case .rightArrow: action = .moveRight
-    default: return .ignored
-    }
-
-    lastKeyboardNavigationAt = Date()
-    isManualScrollMode = false
 
     let effects = navigator.move(
       action: action,
@@ -79,8 +82,8 @@ class EmojiPickerViewModel: ObservableObject {
     )
 
     selectedEmojiIndex = navigator.state.selectedEmojiIndex
-    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex) && !isManualScrollMode
-    return .handled
+    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex)
+    return true
   }
 
   func selectCurrentEmoji() -> String? {
@@ -194,14 +197,6 @@ class EmojiPickerViewModel: ObservableObject {
   }
 
   func consumeAutoScrollSelection() {
-    shouldAutoScrollSelection = false
-  }
-
-  func onScrollActivity() {
-    let isLikelyProgrammaticScroll =
-      Date().timeIntervalSince(lastKeyboardNavigationAt) <= keyboardScrollGraceInterval
-    guard !isLikelyProgrammaticScroll else { return }
-    isManualScrollMode = true
     shouldAutoScrollSelection = false
   }
 

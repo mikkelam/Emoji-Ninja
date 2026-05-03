@@ -118,4 +118,42 @@ struct EmojiNavigationReducerTests {
     #expect(state.selectedEmojiIndex == 2)
     #expect(effects == [.scrollToSelectedIndex])
   }
+
+  @Test func repeatedMoveDownEmitsScrollWhileSelectionAdvances() {
+    var state = EmojiNavigationState(selectedEmojiIndex: 0)
+
+    let first = EmojiNavigationReducer.reduce(
+      state: &state,
+      action: .moveDown,
+      totalEmojis: 18,
+      columns: 6,
+      sectionCounts: [18]
+    )
+    let second = EmojiNavigationReducer.reduce(
+      state: &state,
+      action: .moveDown,
+      totalEmojis: 18,
+      columns: 6,
+      sectionCounts: [18]
+    )
+
+    #expect(first == [.scrollToSelectedIndex])
+    #expect(second == [.scrollToSelectedIndex])
+    #expect(state.selectedEmojiIndex == 12)
+  }
+
+  @Test func moveDownAtEndDoesNotEmitScrollIntent() {
+    var state = EmojiNavigationState(selectedEmojiIndex: 17)
+
+    let effects = EmojiNavigationReducer.reduce(
+      state: &state,
+      action: .moveDown,
+      totalEmojis: 18,
+      columns: 6,
+      sectionCounts: [18]
+    )
+
+    #expect(state.selectedEmojiIndex == 17)
+    #expect(effects.isEmpty)
+  }
 }
