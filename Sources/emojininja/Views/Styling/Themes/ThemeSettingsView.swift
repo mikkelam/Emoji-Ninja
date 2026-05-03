@@ -9,11 +9,13 @@ struct ThemeSettingsView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: theme.spacing.small) {
       // Theme Section Header
-      Button(action: {
-        withAnimation(.easeInOut(duration: 0.2)) {
-          isExpanded.toggle()
-        }
-      }) {
+      Button(
+        action: {
+          withAnimation(.easeInOut(duration: 0.2)) {
+            isExpanded.toggle()
+          }
+        },
+        label: {
         HStack {
           Image(systemName: "paintbrush")
             .iconStyle(color: .primary, size: .medium)
@@ -29,7 +31,8 @@ struct ThemeSettingsView: View {
             .rotationEffect(.degrees(isExpanded ? 0 : 0))
             .animation(.easeInOut(duration: 0.2), value: isExpanded)
         }
-      }
+        }
+      )
       .buttonStyle(.plain)
 
       // Theme Options
@@ -61,7 +64,7 @@ struct ThemeOptionRow: View {
   let onSelect: () -> Void
 
   var body: some View {
-    Button(action: onSelect) {
+    Button(action: onSelect, label: {
       HStack(spacing: theme.spacing.small) {
         // Theme icon
         Image(systemName: themeType.icon)
@@ -93,7 +96,7 @@ struct ThemeOptionRow: View {
           .stroke(
             isSelected ? theme.colors.accent.opacity(0.3) : Color.clear, lineWidth: 1)
       )
-    }
+    })
     .buttonStyle(.plain)
     .animation(.easeInOut(duration: 0.15), value: isSelected)
   }
@@ -162,9 +165,11 @@ struct CompactThemeSelector: View {
 
       Menu {
         ForEach(ThemeType.allCases, id: \.self) { themeType in
-          Button(action: {
-            themeManager.setTheme(themeType)
-          }) {
+          Button(
+            action: {
+              themeManager.setTheme(themeType)
+            },
+            label: {
             HStack {
               Image(systemName: themeType.icon)
               Text(themeType.displayName)
@@ -174,7 +179,8 @@ struct CompactThemeSelector: View {
                 Image(systemName: "checkmark")
               }
             }
-          }
+            }
+          )
         }
       } label: {
         HStack(spacing: theme.spacing.xs) {

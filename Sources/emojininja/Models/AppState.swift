@@ -106,8 +106,7 @@ class AppState: ObservableObject {
 
   private func startPeriodicPermissionChecking() {
     // Check every 2 seconds to catch when user grants permission
-    permissionCheckTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) {
-      [weak self] _ in
+    permissionCheckTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
       Task { @MainActor in
         _ = self?.checkAccessibilityPermissions()
       }

@@ -33,8 +33,7 @@ struct SearchResultsView: View {
         .emptyStateStyle()
       } else {
         LazyVGrid(columns: adaptiveColumns, spacing: theme.spacing.small) {
-          ForEach(Array(searchResults.enumerated()), id: \.element.hexcode) {
-            index, emoji in
+          ForEach(Array(searchResults.enumerated()), id: \.element.hexcode) { index, emoji in
             FastEmojiButton(
               emojiData: emoji,
               isSelected: index == selectedEmojiIndex,

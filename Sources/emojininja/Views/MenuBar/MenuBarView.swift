@@ -29,22 +29,27 @@ struct MenuBarView: View {
 
     // Accessibility permission status
     if !viewModel.hasAccessibilityPermission {
-      Button(action: {
-        viewModel.showAccessibilityDialog()
-      }) {
+      Button(
+        action: {
+          viewModel.showAccessibilityDialog()
+        },
+        label: {
         HStack {
           Image(systemName: "exclamationmark.triangle.fill")
             .foregroundColor(.orange)
           Text("Grant Ninja Powers")
         }
-      }
+        }
+      )
     }
 
     #if DEBUG
       // Debug-only: Always show permission modal option with status indicator
-      Button(action: {
-        viewModel.showAccessibilityDialog()
-      }) {
+      Button(
+        action: {
+          viewModel.showAccessibilityDialog()
+        },
+        label: {
         HStack {
           Image(
             systemName: viewModel.hasAccessibilityPermission
@@ -54,7 +59,8 @@ struct MenuBarView: View {
           Text("Permission Modal (\(viewModel.hasAccessibilityPermission ? "✓" : "✗"))")
             .foregroundColor(.secondary)
         }
-      }
+        }
+      )
     #endif
 
     Button(viewModel.launchAtLogin ? "✓ Launch at Login" : "Launch at Login") {
