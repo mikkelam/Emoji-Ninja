@@ -100,10 +100,10 @@ struct EmojiSearchTests {
     #expect((cowboyIndex ?? 999) < 10)
   }
 
-  @Test @MainActor func singleCharacterExactLikeQueryFindsThumbsUp() throws {
+  @Test @MainActor func singleCharacterQueryPrioritizesKeycapOne() throws {
     let results = dataManager.searchEmojisWithSearchKit(query: "1")
-    let thumbsUpIndex = results.firstIndex { $0.hexcode == "1F44D" }
-    #expect(thumbsUpIndex != nil)
-    #expect((thumbsUpIndex ?? 999) < 20)
+    let keycapOneIndex = results.firstIndex { $0.hexcode == "0031-FE0F-20E3" }
+    #expect(keycapOneIndex != nil)
+    #expect((keycapOneIndex ?? 999) < 3)
   }
 }
