@@ -39,11 +39,14 @@ targets:
     sources:
       - path: Tests/EmojiNinjaTests
     dependencies:
+      - target: EmojiNinjaApp
       - package: EmojiNinjaPackage
         product: ninjalib
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Emoji Ninja.app/Contents/MacOS/Emoji Ninja"
+        BUNDLE_LOADER: "$(TEST_HOST)"
 
 schemes:
   EmojiNinja:
