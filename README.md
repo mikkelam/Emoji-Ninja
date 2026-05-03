@@ -48,7 +48,13 @@ Both methods remove the quarantine flag that triggers the stronger security bloc
 **Requirements:**
 - macOS 14.0+
 - Swift 6.0+
-- [just](https://github.com/casey/just) command runner: `brew install just`
+- [mise](https://mise.jdx.dev/) for dev tooling
+
+**Setup:**
+```bash
+brew install mise
+mise install
+```
 
 **Install to /Applications:**
 ```bash
@@ -57,14 +63,16 @@ just install
 
 ## Development
 
-This project is Xcode-free! All builds use Swift Package Manager via `just` commands.
+This project is CLI-first. The Xcode project is generated from [`project.yml`](project.yml) via XcodeGen.
 
-**Essential commands:**
-- `just dev` - Build debug version and run (shows console output for debugging)
-- `just run` - Build and run debug version
-- `just install` - Build release version and install to /Applications
-- `just clean` - Clean build artifacts
-- `just -l` - Show all available commands
+**Common commands:**
+- `just build`
+- `just test`
+- `just dev` (run app in foreground and keep stdout/stderr in terminal)
+- `just run` (open app)
+- `just install`
+
+Run `just --list` for the full command list.
 
 ## License
 
