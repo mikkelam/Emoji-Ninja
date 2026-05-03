@@ -1,0 +1,55 @@
+name: EmojiNinja
+options:
+  minimumXcodeGenVersion: 2.45.0
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    SWIFT_VERSION: "6.0"
+
+configs:
+  Debug: debug
+  Release: release
+
+packages:
+  EmojiNinjaPackage:
+    path: .
+
+targets:
+  EmojiNinjaApp:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    info:
+      path: BuildResources/Info.plist
+    sources:
+      - path: Sources/emojininja
+    dependencies:
+      - package: EmojiNinjaPackage
+        product: ninjalib
+    settings:
+      base:
+        PRODUCT_NAME: "Emoji Ninja"
+        PRODUCT_BUNDLE_IDENTIFIER: com.mikkelam.emoji-ninja
+        GENERATE_INFOPLIST_FILE: NO
+
+  EmojiNinjaTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Tests/EmojiNinjaTests
+    dependencies:
+      - package: EmojiNinjaPackage
+        product: ninjalib
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  EmojiNinja:
+    build:
+      targets:
+        EmojiNinjaApp: all
+    test:
+      targets:
+        - EmojiNinjaTests

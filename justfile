@@ -1,210 +1,55 @@
-# Emoji Ninja Build Automation
-# Replace scary bash scripts with clean, composable commands
-# Configuration
+set shell := ["bash", "-euo", "pipefail", "-c"]
 
-app_name := "Emoji Ninja"
-build_dir := ".build"
+project := "EmojiNinja.xcodeproj"
+scheme := "EmojiNinja"
+config := "Debug"
+release_config := "Release"
+archive_path := "build/EmojiNinja.xcarchive"
 dist_dir := "dist"
-version := `cat VERSION 2>/dev/null || echo "1.0.0"`
+app_name := "Emoji Ninja.app"
 
-# List all available commands
 default:
     @just --list
 
-# Clean build artifacts
+gen:
+    xcodegen generate
+
 clean:
-    swift package clean
-    rm -rf {{ build_dir }}
-    rm -rf {{ dist_dir }}
+    rm -rf build dist
+    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ config }} clean || true
 
-# Build debug version
-build:
-    @echo "🔨 Building debug version..."
-    swift build
+build: gen
+    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ config }} build
 
-# Build release version
-build-release:
-    @echo "🔨 Building release version..."
-    swift build -c release
+test: gen
+    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ config }} test
 
-# Build with clean first
-build-clean mode="debug": clean
-    @if [ "{{ mode }}" = "release" ]; then just build-release; else just build; fi
+run: build
+    open "$(find ~/Library/Developer/Xcode/DerivedData -type d -name "{{ app_name }}" -path "*/Build/Products/{{ config }}/*" | head -n 1)"
 
-test:
-    @echo "🧪 Running tests..."
-    swift test --parallel
+archive: gen
+    rm -rf {{ archive_path }}
+    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ release_config }} archive -archivePath {{ archive_path }}
 
-# Kill any running instances
-kill:
-    #!/usr/bin/env bash
-    echo "🔪 Killing existing instances..."
-    pkill -f "{{ app_name }}" || true
-    pkill -f ".build/debug/{{ app_name }}" || true
-    pkill -f ".build/release/{{ app_name }}" || true
-    sleep 0.5
+app: archive
+    @echo "{{ archive_path }}/Products/Applications/{{ app_name }}"
 
-# Create app bundle structure
-_create-bundle mode="debug":
-    #!/usr/bin/env bash
-    echo "📱 Creating app bundle..."
-
-    if [ "{{ mode }}" = "release" ]; then
-        executable_path="{{ build_dir }}/release/{{ app_name }}"
-    else
-        executable_path="{{ build_dir }}/debug/{{ app_name }}"
-    fi
-
-    app_dir="{{ build_dir }}/{{ app_name }}.app"
-    contents_dir="$app_dir/Contents"
-    macos_dir="$contents_dir/MacOS"
-    resources_dir="$contents_dir/Resources"
-
-    # Create directory structure
-    rm -rf "$app_dir"
-    mkdir -p "$macos_dir" "$resources_dir"
-
-    # Copy executable
-    cp "$executable_path" "$macos_dir/{{ app_name }}"
-    chmod +x "$macos_dir/{{ app_name }}"
-
-    # Copy Info.plist
-    cp "BuildResources/Info.plist" "$contents_dir/Info.plist"
-
-    # Copy SPM resource bundles
-    echo "📦 Copying SPM resource bundles..."
-    if [ "{{ mode }}" = "release" ]; then
-        bundle_source="{{ build_dir }}/release"
-    else
-        bundle_source="{{ build_dir }}/arm64-apple-macosx/debug"
-    fi
-
-    for bundle in "$bundle_source"/*.bundle; do
-        if [ -d "$bundle" ]; then
-            echo "📦 Copying $(basename "$bundle")"
-            cp -R "$bundle" "$app_dir/"
-        fi
-    done
-
-    # Compile app icon (and any other assets) into main bundle
-    if [ -d "Sources/emojininja/Assets.xcassets" ]; then
-        xcrun actool \
-            --compile "$resources_dir" \
-            --platform macosx \
-            --minimum-deployment-target 14.0 \
-            --app-icon "AppIcon" \
-            --output-partial-info-plist "$contents_dir/assetcatalog_generated_info.plist" \
-            "Sources/emojininja/Assets.xcassets"
-        echo "✅ Compiled asset catalog into Assets.car"
-    else
-        echo "⚠️ Assets.xcassets not found; app icon may be missing"
-    fi
-
-    echo "✅ App bundle created at: $app_dir"
-
-# Create debug app bundle
-bundle: build
-    just _create-bundle debug
-
-# Create release app bundle
-bundle-release: build-release
-    just _create-bundle release
-
-# Run debug version
-run: bundle kill
-    @echo "🏃 Launching {{ app_name }}..."
-    "{{ build_dir }}/{{ app_name }}.app/Contents/MacOS/{{ app_name }}"
-
-# Run release version
-run-release: bundle-release kill
-    @echo "🏃 Launching {{ app_name }} (release)..."
-    "{{ build_dir }}/{{ app_name }}.app/Contents/MacOS/{{ app_name }}"
-
-# Open app bundle in Finder
-open: bundle
-    open "{{ build_dir }}/{{ app_name }}.app"
-
-# Fetch emoji data (if needed)
-fetch-emoji:
-    @echo "📥 Fetching emoji data..."
-    bash "fetch_emoji_data.sh"
-
-# Create ZIP archive for distribution
-_create-zip: bundle-release
-    @echo "📦 Creating ZIP archive..."
+dist-zip: archive
     mkdir -p {{ dist_dir }}
-    cd {{ build_dir }} && zip -r "../{{ dist_dir }}/EmojiNinja-v{{ version }}-macos.zip" "{{ app_name }}.app"
-    @echo "✅ ZIP created: {{ dist_dir }}/EmojiNinja-v{{ version }}-macos.zip"
+    ditto -c -k --sequesterRsrc --keepParent "{{ archive_path }}/Products/Applications/{{ app_name }}" "{{ dist_dir }}/EmojiNinja.zip"
 
-# Create DMG for distribution
-_create-dmg: bundle-release
-    @echo "💿 Creating DMG..."
-    rm -rf "{{ dist_dir }}/EmojiNinja-v{{ version }}.dmg" "{{ dist_dir }}/dmg_staging"
-    mkdir -p "{{ dist_dir }}/dmg_staging"
+dist-dmg: archive
+    mkdir -p {{ dist_dir }}/dmg
+    rm -rf {{ dist_dir }}/dmg/*
+    cp -R "{{ archive_path }}/Products/Applications/{{ app_name }}" {{ dist_dir }}/dmg/
+    ln -s /Applications {{ dist_dir }}/dmg/Applications
+    hdiutil create -srcfolder {{ dist_dir }}/dmg -format UDZO -volname "EmojiNinja" {{ dist_dir }}/EmojiNinja.dmg
 
-    # Copy app and create Applications symlink
-    cp -R "{{ build_dir }}/{{ app_name }}.app" "{{ dist_dir }}/dmg_staging/"
-    ln -s /Applications "{{ dist_dir }}/dmg_staging/Applications"
+install: archive
+    rm -rf "/Applications/{{ app_name }}"
+    cp -R "{{ archive_path }}/Products/Applications/{{ app_name }}" /Applications/
 
-    # Create DMG
-    hdiutil create -srcfolder "{{ dist_dir }}/dmg_staging" -format UDZO -volname "EmojiNinja-v{{ version }}" "{{ dist_dir }}/EmojiNinja-v{{ version }}.dmg"
-    rm -rf "{{ dist_dir }}/dmg_staging"
-
-    @echo "✅ DMG created: {{ dist_dir }}/EmojiNinja-v{{ version }}.dmg"
-
-# Create checksums for distribution files
-_checksums:
-    @echo "🔍 Creating checksums..."
-    cd {{ dist_dir }} && shasum -a 256 *.dmg *.zip 2>/dev/null > checksums.txt || echo "No files to checksum"
-
-# Full distribution build (DMG + ZIP)
-dist: _create-zip _create-dmg _checksums
-    @echo "🎉 Distribution complete!"
-    @echo "📦 Files in {{ dist_dir }}:"
-    @ls -la {{ dist_dir }}/
-
-# Create only ZIP distribution
-dist-zip: _create-zip _checksums
-    @echo "📦 ZIP distribution ready in {{ dist_dir }}/"
-
-# Create only DMG distribution
-dist-dmg: _create-dmg _checksums
-    @echo "💿 DMG distribution ready in {{ dist_dir }}/"
-
-# Development workflow - build and run quickly
-dev: run
-
-# Release workflow - clean build and test
-release: run-release
-
-# Install to /Applications
-install: bundle-release
-    @echo "📲 Installing {{ app_name }} to /Applications..."
-    @if [ -d "/Applications/{{ app_name }}.app" ]; then \
-        echo "🗑️ Removing existing installation..."; \
-        rm -rf "/Applications/{{ app_name }}.app"; \
-    fi
-    cp -R "{{ build_dir }}/{{ app_name }}.app" "/Applications/"
-    @echo "✅ {{ app_name }} installed to /Applications"
-
-# Check project status
 status:
-    @echo "📊 Project Status:"
-    @echo "Version: {{ version }}"
-    @echo "App name: {{ app_name }}"
-    @test -f Sources/ninjalib/emoji_data.json && echo "✅ Emoji data present" || echo "❌ Emoji data missing (run 'just fetch-emoji')"
-    @test -d {{ build_dir }} && echo "📁 Build directory exists" || echo "📁 No build directory"
-    @test -d "{{ build_dir }}/{{ app_name }}.app" && echo "📱 App bundle exists" || echo "📱 No app bundle"
-
-# Get current version
-get-version:
-    @echo "{{ version }}"
-
-# Aliases for convenience
-
-alias b := build
-alias br := build-release
-alias r := run
-alias rr := run-release
-alias d := dev
-alias i := install
+    @echo "project: {{ project }}"
+    @test -f project.yml && echo "xcodegen spec: present" || echo "xcodegen spec: missing"
+    @test -d {{ project }} && echo "xcodeproj: present" || echo "xcodeproj: missing (run 'just gen')"
