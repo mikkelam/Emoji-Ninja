@@ -9,8 +9,10 @@ class EmojiPickerViewModel: ObservableObject {
   @Published var selectedEmojiIndex = 0
   @Published var currentSearchResults: [EmojibaseEmoji] = []
   @Published var searchResultsId = UUID()
+  @Published private(set) var shouldAutoScrollSelection = false
 
   private let emojiManager: EmojiManager
+  private var navigationState = EmojiNavigationState()
 
   var isInSearchMode: Bool {
     return searchText.count >= 2
@@ -29,13 +31,6 @@ class EmojiPickerViewModel: ObservableObject {
           self?.resetSearch()
           self?.emojiManager.shouldResetSearch = false
         }
-      }
-      .store(in: &cancellables)
-
-    // Reset selected emoji index when category changes
-    $selectedCategory
-      .sink { [weak self] _ in
-        self?.selectedEmojiIndex = 0
       }
       .store(in: &cancellables)
   }
@@ -59,28 +54,26 @@ class EmojiPickerViewModel: ObservableObject {
     guard !allEmojis.isEmpty else { return .ignored }
 
     let columns = EmojiLayout.gridColumns
-    let totalEmojis = allEmojis.count
+    let action: EmojiNavigationAction
 
     switch keyPress.key {
-    case .upArrow:
-      selectedEmojiIndex = max(0, selectedEmojiIndex - columns)
-      return .handled
-
-    case .downArrow:
-      selectedEmojiIndex = min(totalEmojis - 1, selectedEmojiIndex + columns)
-      return .handled
-
-    case .leftArrow:
-      selectedEmojiIndex = max(0, selectedEmojiIndex - 1)
-      return .handled
-
-    case .rightArrow:
-      selectedEmojiIndex = min(totalEmojis - 1, selectedEmojiIndex + 1)
-      return .handled
-
-    default:
-      return .ignored
+    case .upArrow: action = .moveUp
+    case .downArrow: action = .moveDown
+    case .leftArrow: action = .moveLeft
+    case .rightArrow: action = .moveRight
+    default: return .ignored
     }
+
+    let effects = EmojiNavigationReducer.reduce(
+      state: &navigationState,
+      action: action,
+      totalEmojis: allEmojis.count,
+      columns: columns
+    )
+
+    selectedEmojiIndex = navigationState.selectedEmojiIndex
+    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex)
+    return .handled
   }
 
   func selectCurrentEmoji() -> String? {
@@ -102,14 +95,28 @@ class EmojiPickerViewModel: ObservableObject {
   }
 
   func resetSearch() {
+    let effects = EmojiNavigationReducer.reduce(
+      state: &navigationState,
+      action: .resetSelectionWithoutScroll,
+      totalEmojis: max(getAllEmojis().count, 1),
+      columns: EmojiLayout.gridColumns
+    )
+    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex)
     searchText = ""
-    selectedEmojiIndex = 0
+    selectedEmojiIndex = navigationState.selectedEmojiIndex
     selectedCategory = nil
     updateSearchResults()
   }
 
   func onSearchTextChanged() {
-    selectedEmojiIndex = 0
+    let effects = EmojiNavigationReducer.reduce(
+      state: &navigationState,
+      action: .resetSelectionWithoutScroll,
+      totalEmojis: max(getAllEmojis().count, 1),
+      columns: EmojiLayout.gridColumns
+    )
+    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex)
+    selectedEmojiIndex = navigationState.selectedEmojiIndex
     updateSearchResults()
   }
 
@@ -134,7 +141,14 @@ class EmojiPickerViewModel: ObservableObject {
       selectedCategory = availableCategories.first
     }
 
-    selectedEmojiIndex = 0
+    let effects = EmojiNavigationReducer.reduce(
+      state: &navigationState,
+      action: .resetSelectionAndScroll,
+      totalEmojis: max(getAllEmojis().count, 1),
+      columns: EmojiLayout.gridColumns
+    )
+    selectedEmojiIndex = navigationState.selectedEmojiIndex
+    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex)
   }
 
   func navigateToPreviousCategory() {
@@ -155,7 +169,25 @@ class EmojiPickerViewModel: ObservableObject {
       selectedCategory = availableCategories.last
     }
 
-    selectedEmojiIndex = 0
+    let effects = EmojiNavigationReducer.reduce(
+      state: &navigationState,
+      action: .resetSelectionAndScroll,
+      totalEmojis: max(getAllEmojis().count, 1),
+      columns: EmojiLayout.gridColumns
+    )
+    selectedEmojiIndex = navigationState.selectedEmojiIndex
+    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex)
+  }
+
+  func onSelectedCategoryChangedFromUI() {
+    let effects = EmojiNavigationReducer.reduce(
+      state: &navigationState,
+      action: .resetSelectionWithoutScroll,
+      totalEmojis: max(getAllEmojis().count, 1),
+      columns: EmojiLayout.gridColumns
+    )
+    selectedEmojiIndex = navigationState.selectedEmojiIndex
+    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex)
   }
 
   private func getAvailableCategories() -> [CategoryType] {
@@ -183,5 +215,9 @@ class EmojiPickerViewModel: ObservableObject {
     } else {
       return currentSearchResults
     }
+  }
+
+  func consumeAutoScrollSelection() {
+    shouldAutoScrollSelection = false
   }
 }

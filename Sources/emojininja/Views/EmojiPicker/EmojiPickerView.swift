@@ -72,6 +72,7 @@ struct EmojiPickerView: View {
             }
             .trackEmojiScrolling(isScrolling: $isScrolling)
             .onChange(of: viewModel.selectedEmojiIndex) { _, _ in
+              guard viewModel.shouldAutoScrollSelection else { return }
               if let currentEmoji = viewModel.getCurrentEmoji() {
                 let targetId = "emoji_\(currentEmoji.hexcode)"
                 if !isScrolling {
@@ -82,20 +83,10 @@ struct EmojiPickerView: View {
                   proxy.scrollTo(targetId, anchor: .center)
                 }
               }
+              viewModel.consumeAutoScrollSelection()
             }
             .onChange(of: viewModel.selectedCategory) { _, _ in
-              DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                if let currentEmoji = viewModel.getCurrentEmoji() {
-                  let targetId = "emoji_\(currentEmoji.hexcode)"
-                  if !isScrolling {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                      proxy.scrollTo(targetId, anchor: .center)
-                    }
-                  } else {
-                    proxy.scrollTo(targetId, anchor: .center)
-                  }
-                }
-              }
+              viewModel.onSelectedCategoryChangedFromUI()
             }
           }
         }
