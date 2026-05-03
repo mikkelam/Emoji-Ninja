@@ -75,7 +75,7 @@ struct EmojiCategorySection: View {
           ) {
             onEmojiSelected(emojiIndexData.emoji)
           }
-          .id("emoji_\(emojiIndexData.emoji.hexcode)")
+          .id("emoji_index_\(emojiIndexData.globalIndex)")
         }
       }
       .id("grid_\(categoryData.category)")

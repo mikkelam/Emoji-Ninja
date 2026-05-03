@@ -41,7 +41,7 @@ struct SearchResultsView: View {
             ) {
               onEmojiSelected(emoji)
             }
-            .id("emoji_\(emoji.hexcode)")
+            .id("emoji_index_\(index)")
           }
         }
         .id("search_grid_\(searchResultsId)")

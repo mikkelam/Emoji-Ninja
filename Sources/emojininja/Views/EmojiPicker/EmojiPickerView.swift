@@ -71,15 +71,15 @@ struct EmojiPickerView: View {
               .padding(.vertical, theme.spacing.xs)
             }
             .trackEmojiScrolling(isScrolling: $isScrolling)
+            .onChange(of: isScrolling) { _, newValue in
+              if newValue {
+                viewModel.onScrollActivity()
+              }
+            }
             .onChange(of: viewModel.selectedEmojiIndex) { _, _ in
               guard viewModel.shouldAutoScrollSelection else { return }
-              if let currentEmoji = viewModel.getCurrentEmoji() {
-                let targetId = "emoji_\(currentEmoji.hexcode)"
-                if !isScrolling {
-                  withAnimation(.easeInOut(duration: 0.3)) {
-                    proxy.scrollTo(targetId, anchor: .center)
-                  }
-                } else {
+              if let targetId = viewModel.currentScrollTargetId() {
+                withAnimation(.easeInOut(duration: 0.2)) {
                   proxy.scrollTo(targetId, anchor: .center)
                 }
               }
