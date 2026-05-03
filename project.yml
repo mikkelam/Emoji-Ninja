@@ -29,6 +29,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: "Emoji Ninja"
+        PRODUCT_MODULE_NAME: emoji
         PRODUCT_BUNDLE_IDENTIFIER: com.mikkelam.emoji-ninja
         GENERATE_INFOPLIST_FILE: NO
 
