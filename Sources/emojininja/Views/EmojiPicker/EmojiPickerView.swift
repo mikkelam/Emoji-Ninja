@@ -22,7 +22,7 @@ struct EmojiPickerView: View {
 
   var body: some View {
     let searchSnapshot = viewModel.searchDisplaySnapshot
-    let isInSearchMode = searchSnapshot.query.count >= 2
+    let isInSearchMode = !searchSnapshot.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
     GeometryReader { geometry in
       ZStack {
@@ -70,7 +70,6 @@ struct EmojiPickerView: View {
                       for: geometry, theme: theme),
                     searchResults: searchSnapshot.results,
                     selectedEmojiIndex: viewModel.selectedEmojiIndex,
-                    searchResultsId: searchSnapshot.id,
                     onEmojiSelected: onEmojiSelected
                   )
                 }

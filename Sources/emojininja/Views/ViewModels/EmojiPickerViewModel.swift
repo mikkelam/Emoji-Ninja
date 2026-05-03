@@ -5,7 +5,6 @@ import ninjalib
 struct SearchDisplaySnapshot {
   let query: String
   let results: [EmojibaseEmoji]
-  let id: UUID
 }
 
 @MainActor
@@ -15,8 +14,7 @@ class EmojiPickerViewModel: ObservableObject {
   @Published var selectedEmojiIndex = 0
   @Published private(set) var searchDisplaySnapshot = SearchDisplaySnapshot(
     query: "",
-    results: [],
-    id: UUID()
+    results: []
   )
   @Published private(set) var currentSections: [EmojiSectionSnapshot] = []
   @Published private(set) var shouldAutoScrollSelection = false
@@ -27,7 +25,7 @@ class EmojiPickerViewModel: ObservableObject {
   private var navigator = EmojiNavigator()
 
   var isInSearchMode: Bool {
-    return searchText.count >= 2
+    return !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
   }
 
   convenience init(emojiManager: EmojiManager) {
@@ -229,14 +227,12 @@ class EmojiPickerViewModel: ObservableObject {
     if isInSearchMode {
       searchDisplaySnapshot = SearchDisplaySnapshot(
         query: searchText,
-        results: dataSnapshot.flatEmojis,
-        id: UUID()
+        results: dataSnapshot.flatEmojis
       )
     } else {
       searchDisplaySnapshot = SearchDisplaySnapshot(
         query: "",
-        results: [],
-        id: UUID()
+        results: []
       )
     }
   }

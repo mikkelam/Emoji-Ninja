@@ -5,7 +5,6 @@ struct SearchResultsView: View {
   let buttonSize: CGFloat
   let searchResults: [EmojibaseEmoji]
   let selectedEmojiIndex: Int
-  let searchResultsId: UUID
   let onEmojiSelected: (EmojibaseEmoji) -> Void
   @Environment(\.theme) private var theme
 
@@ -44,7 +43,6 @@ struct SearchResultsView: View {
             .id("emoji_index_\(index)_\(emoji.hexcode)")
           }
         }
-        .id("search_grid_\(searchResultsId)")
       }
     }
   }
