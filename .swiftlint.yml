@@ -1,3 +1,9 @@
-disabled_rules:
-  - trailing_comma
-  - opening_brace
+included:
+  - Sources
+  - Tests
+  - Package.swift
+
+excluded:
+  - .build
+  - build
+  - EmojiNinja.xcodeproj

@@ -93,8 +93,8 @@ struct Shadows {
 struct ShadowStyle {
   let color: Color
   let radius: CGFloat
-  let x: CGFloat
-  let y: CGFloat
+  let xOffset: CGFloat
+  let yOffset: CGFloat
 }
 
 // MARK: - Dark Theme Implementation
@@ -165,20 +165,20 @@ struct DarkTheme: Theme {
     small: ShadowStyle(
       color: Color.black.opacity(0.1),
       radius: 2,
-      x: 0,
-      y: 1
+      xOffset: 0,
+      yOffset: 1
     ),
     medium: ShadowStyle(
       color: Color.black.opacity(0.15),
       radius: 4,
-      x: 0,
-      y: 2
+      xOffset: 0,
+      yOffset: 2
     ),
     large: ShadowStyle(
       color: Color.black.opacity(0.2),
       radius: 8,
-      x: 0,
-      y: 4
+      xOffset: 0,
+      yOffset: 4
     )
   )
 }
@@ -251,20 +251,20 @@ struct LightTheme: Theme {
     small: ShadowStyle(
       color: Color.black.opacity(0.05),
       radius: 2,
-      x: 0,
-      y: 1
+      xOffset: 0,
+      yOffset: 1
     ),
     medium: ShadowStyle(
       color: Color.black.opacity(0.1),
       radius: 4,
-      x: 0,
-      y: 2
+      xOffset: 0,
+      yOffset: 2
     ),
     large: ShadowStyle(
       color: Color.black.opacity(0.15),
       radius: 8,
-      x: 0,
-      y: 4
+      xOffset: 0,
+      yOffset: 4
     )
   )
 }

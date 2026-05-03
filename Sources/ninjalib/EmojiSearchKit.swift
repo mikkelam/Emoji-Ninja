@@ -175,8 +175,8 @@ public class EmojiSearchKit {
     )
 
     // Process results
-    for i in 0..<foundCount {
-      let docID = documentIDs[i]
+    for index in 0..<foundCount {
+      let docID = documentIDs[index]
 
       // Get document URL
       if let documentRef = SKIndexCopyDocumentForDocumentID(index, docID) {
@@ -189,11 +189,11 @@ public class EmojiSearchKit {
             let matchedTerms = extractMatchedTerms(query: query, emoji: emoji)
 
             results.append(
-              SearchResult(
-                emoji: emoji,
-                score: scores[i],
-                matchedTerms: matchedTerms
-              ))
+                SearchResult(
+                  emoji: emoji,
+                  score: scores[index],
+                  matchedTerms: matchedTerms
+                ))
           }
         }
       }

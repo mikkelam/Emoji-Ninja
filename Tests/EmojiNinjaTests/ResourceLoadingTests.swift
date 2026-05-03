@@ -32,7 +32,7 @@ struct ResourceLoadingTests {
     let json = try JSONSerialization.jsonObject(with: data)
     #expect(json is [Any])
 
-    let array = json as! [Any]
+    let array = try #require(json as? [Any])
     #expect(array.count > 0)
   }
 

@@ -33,8 +33,8 @@ struct EmojiSearchKitTests {
     #expect(results.count > 0)
 
     // Verify scores are in descending order
-    for i in 1..<results.count {
-      #expect(results[i - 1].score >= results[i].score)
+    for index in 1..<results.count {
+      #expect(results[index - 1].score >= results[index].score)
     }
 
     // Top result should have highest score

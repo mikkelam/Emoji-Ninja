@@ -13,8 +13,8 @@ struct ThemedCardModifier: ViewModifier {
           .shadow(
             color: shadowStyle.color,
             radius: shadowStyle.radius,
-            x: shadowStyle.x,
-            y: shadowStyle.y
+            x: shadowStyle.xOffset,
+            y: shadowStyle.yOffset
           )
       )
   }
@@ -241,8 +241,8 @@ struct ThemedShadowModifier: ViewModifier {
       .shadow(
         color: shadowStyle.color,
         radius: shadowStyle.radius,
-        x: shadowStyle.x,
-        y: shadowStyle.y
+        x: shadowStyle.xOffset,
+        y: shadowStyle.yOffset
       )
   }
 
