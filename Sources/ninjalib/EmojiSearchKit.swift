@@ -211,10 +211,8 @@ public class EmojiSearchKit {
     var merged = existing
     let existingHexcodes = Set(existing.map { $0.emoji.hexcode })
 
-    for result in new {
-      if !existingHexcodes.contains(result.emoji.hexcode) {
-        merged.append(result)
-      }
+    for result in new where !existingHexcodes.contains(result.emoji.hexcode) {
+      merged.append(result)
     }
 
     return merged
@@ -226,20 +224,16 @@ public class EmojiSearchKit {
 
     // Check label
     let labelLower = emoji.label.lowercased()
-    for term in queryTerms {
-      if labelLower.contains(term) {
-        matched.insert(emoji.label)
-      }
+    for term in queryTerms where labelLower.contains(term) {
+      matched.insert(emoji.label)
     }
 
     // Check tags
     if let tags = emoji.tags {
       for tag in tags {
         let tagLower = tag.lowercased()
-        for term in queryTerms {
-          if tagLower.contains(term) {
-            matched.insert(tag)
-          }
+        for term in queryTerms where tagLower.contains(term) {
+          matched.insert(tag)
         }
       }
     }

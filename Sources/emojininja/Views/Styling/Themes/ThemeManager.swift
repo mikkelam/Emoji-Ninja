@@ -62,9 +62,9 @@ class ThemeManager: ObservableObject {
 
 // MARK: - Theme Type
 enum ThemeType: String, CaseIterable {
-  case light = "light"
-  case dark = "dark"
-  case system = "system"
+  case light
+  case dark
+  case system
 
   var displayName: String {
     switch self {
