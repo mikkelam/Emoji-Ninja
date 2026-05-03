@@ -21,12 +21,18 @@ struct EmojiPickerView: View {
   }
 
   var body: some View {
+    let searchSnapshot = viewModel.searchDisplaySnapshot
+    let isInSearchMode = searchSnapshot.query.count >= 2
+
     GeometryReader { geometry in
       ZStack {
         VStack(spacing: 0) {
           // Search Bar
           SearchBar(
-            searchText: $viewModel.searchText,
+            searchText: Binding(
+              get: { viewModel.searchText },
+              set: { viewModel.setSearchText($0) }
+            ),
             emojiManager: emojiManager,
             onKeyPress: viewModel.handleKeyPress,
             onSubmit: handleSubmit,
@@ -34,7 +40,7 @@ struct EmojiPickerView: View {
           )
 
           // Category Filter Pills
-          if !viewModel.isInSearchMode {
+          if !isInSearchMode {
             CategoryFilterView(selectedCategory: $viewModel.selectedCategory)
           }
 
@@ -47,7 +53,7 @@ struct EmojiPickerView: View {
                 Color.clear
                   .frame(height: 1)
                   .id("emoji_content_top")
-                if !viewModel.isInSearchMode {
+                if !isInSearchMode {
                   // Category browsing mode
                   EmojiGridView(
                     geometry: geometry,
@@ -62,9 +68,9 @@ struct EmojiPickerView: View {
                   SearchResultsView(
                     buttonSize: EmojiLayout.cachedButtonSize(
                       for: geometry, theme: theme),
-                    searchResults: viewModel.currentSearchResults,
+                    searchResults: searchSnapshot.results,
                     selectedEmojiIndex: viewModel.selectedEmojiIndex,
-                    searchResultsId: viewModel.searchResultsId,
+                    searchResultsId: searchSnapshot.id,
                     onEmojiSelected: onEmojiSelected
                   )
                 }
@@ -116,9 +122,6 @@ struct EmojiPickerView: View {
     }
     .onAppear {
       viewModel.resetSearch()
-    }
-    .onChange(of: viewModel.searchText) { _, _ in
-      viewModel.onSearchTextChanged()
     }
     .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
       viewModel.resetSearch()

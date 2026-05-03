@@ -2,14 +2,23 @@ import Combine
 import SwiftUI
 import ninjalib
 
+struct SearchDisplaySnapshot {
+  let query: String
+  let results: [EmojibaseEmoji]
+  let id: UUID
+}
+
 @MainActor
 class EmojiPickerViewModel: ObservableObject {
   @Published var searchText = ""
   @Published var selectedCategory: CategoryType?
   @Published var selectedEmojiIndex = 0
-  @Published var currentSearchResults: [EmojibaseEmoji] = []
+  @Published private(set) var searchDisplaySnapshot = SearchDisplaySnapshot(
+    query: "",
+    results: [],
+    id: UUID()
+  )
   @Published private(set) var currentSections: [EmojiSectionSnapshot] = []
-  @Published var searchResultsId = UUID()
   @Published private(set) var shouldAutoScrollSelection = false
 
   private let emojiManager: EmojiManager
@@ -53,7 +62,6 @@ class EmojiPickerViewModel: ObservableObject {
 
   func updateSearchResults() {
     refreshDataSnapshot()
-    searchResultsId = UUID()
   }
 
   func handleKeyPress(_ keyPress: KeyPress) -> KeyPress.Result {
@@ -125,6 +133,12 @@ class EmojiPickerViewModel: ObservableObject {
     shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex)
     updateSearchResults()
     selectedEmojiIndex = navigator.state.selectedEmojiIndex
+  }
+
+  func setSearchText(_ newValue: String) {
+    guard searchText != newValue else { return }
+    searchText = newValue
+    onSearchTextChanged()
   }
 
   // MARK: - Private Methods
@@ -203,12 +217,27 @@ class EmojiPickerViewModel: ObservableObject {
   func currentScrollTargetId() -> String? {
     let allEmojis = dataSnapshot.flatEmojis
     guard selectedEmojiIndex >= 0 && selectedEmojiIndex < allEmojis.count else { return nil }
+    if isInSearchMode {
+      return "emoji_index_\(selectedEmojiIndex)_\(allEmojis[selectedEmojiIndex].hexcode)"
+    }
     return "emoji_index_\(selectedEmojiIndex)"
   }
 
   private func refreshDataSnapshot() {
     dataSnapshot = dataSource.makeSnapshot(searchText: searchText, selectedCategory: selectedCategory)
     currentSections = dataSnapshot.sections
-    currentSearchResults = isInSearchMode ? dataSnapshot.flatEmojis : []
+    if isInSearchMode {
+      searchDisplaySnapshot = SearchDisplaySnapshot(
+        query: searchText,
+        results: dataSnapshot.flatEmojis,
+        id: UUID()
+      )
+    } else {
+      searchDisplaySnapshot = SearchDisplaySnapshot(
+        query: "",
+        results: [],
+        id: UUID()
+      )
+    }
   }
 }
