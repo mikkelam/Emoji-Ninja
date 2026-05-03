@@ -16,7 +16,7 @@ let package = Package(
     .executable(
       name: "Emoji Ninja",
       targets: ["emoji"]
-    ),
+    )
   ],
   dependencies: [],
   targets: [
@@ -31,7 +31,7 @@ let package = Package(
     .executableTarget(
       name: "emoji",
       dependencies: [
-        "ninjalib",
+        "ninjalib"
       ],
       path: "Sources/emojininja",
       resources: [
@@ -42,6 +42,6 @@ let package = Package(
     .testTarget(
       name: "EmojiNinjaTests",
       dependencies: ["ninjalib"]
-    ),
+    )
   ]
 )

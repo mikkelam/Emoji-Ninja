@@ -37,7 +37,7 @@ public class EmojiSearchKit {
       [
         kSKProximityIndexing: true,  // Enable proximity searching
         kSKMinTermLength: 1,  // Allow single character searches
-        kSKMaximumTerms: 2000,  // Plenty of terms for tags
+        kSKMaximumTerms: 2000  // Plenty of terms for tags
       ] as CFDictionary
 
     // Create the index
@@ -189,11 +189,11 @@ public class EmojiSearchKit {
             let matchedTerms = extractMatchedTerms(query: query, emoji: emoji)
 
             results.append(
-                SearchResult(
-                  emoji: emoji,
-                  score: scores[index],
-                  matchedTerms: matchedTerms
-                ))
+              SearchResult(
+                emoji: emoji,
+                score: scores[index],
+                matchedTerms: matchedTerms
+              ))
           }
         }
       }

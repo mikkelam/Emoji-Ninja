@@ -1,6 +1,6 @@
 import AppKit
-@preconcurrency import Combine
 import Carbon
+@preconcurrency import Combine
 import SwiftUI
 import ninjalib
 
@@ -218,7 +218,8 @@ class EmojiManager: ObservableObject {
   }
 
   private func setupHotKey() {
-    let eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+    let eventType = EventTypeSpec(
+      eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
     let hotKeyID = EventHotKeyID(signature: OSType(fourCharCode("EMNJ")), id: 1)
 
     let status = InstallEventHandler(
@@ -235,7 +236,9 @@ class EmojiManager: ObservableObject {
           nil,
           &receivedHotKeyID
         )
-        guard copyStatus == noErr, receivedHotKeyID.signature == OSType(fourCharCode("EMNJ")), receivedHotKeyID.id == 1 else {
+        guard copyStatus == noErr, receivedHotKeyID.signature == OSType(fourCharCode("EMNJ")),
+          receivedHotKeyID.id == 1
+        else {
           return noErr
         }
         guard let userData else { return noErr }
