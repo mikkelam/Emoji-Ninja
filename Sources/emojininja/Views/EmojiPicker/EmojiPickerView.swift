@@ -132,8 +132,7 @@ struct EmojiPickerView: View {
     .onChange(of: viewModel.searchText) { _, _ in
       viewModel.onSearchTextChanged()
     }
-    .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) {
-      _ in
+    .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
       viewModel.resetSearch()
     }
   }

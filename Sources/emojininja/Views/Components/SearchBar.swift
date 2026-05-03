@@ -57,19 +57,21 @@ struct SearchBar: View {
         }
 
         if !searchText.isEmpty {
-          Button(action: { searchText = "" }) {
+          Button(action: { searchText = "" }, label: {
             Image(systemName: "xmark.circle.fill")
               .iconStyle(color: .secondary, size: .medium)
-          }
+          })
           .buttonStyle(.plain)
         }
 
         // Skin tone selector integrated into search bar
         Menu {
           ForEach(SkinTone.allCases, id: \.self) { tone in
-            Button(action: {
-              emojiManager.selectedSkinTone = tone
-            }) {
+            Button(
+              action: {
+                emojiManager.selectedSkinTone = tone
+              },
+              label: {
               HStack {
                 Text(tone.emoji)
                   .font(theme.typography.emoji.medium)
@@ -77,7 +79,8 @@ struct SearchBar: View {
                   .font(theme.typography.body)
                 Spacer()
               }
-            }
+              }
+            )
           }
         } label: {
           Text(emojiManager.selectedSkinTone.emoji)

@@ -29,7 +29,10 @@ struct AccessibilityPermissionDialog: View {
       // Explanation text
       VStack(spacing: 12) {
         Text(
-          "Grant accessibility permission to unleash the full power of Emoji Ninja. This allows instant emoji insertion into any app without the tedious copy-paste dance."
+          """
+          Grant accessibility permission to unleash the full power of Emoji Ninja.
+          This allows instant emoji insertion into any app without the tedious copy-paste dance.
+          """
         )
         .font(.body)
         .foregroundColor(theme.colors.text.primary)
