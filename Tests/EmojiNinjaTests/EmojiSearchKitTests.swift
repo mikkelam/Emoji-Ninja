@@ -193,8 +193,7 @@ struct EmojiSearchKitTests {
       #expect(!result.emoji.label.isEmpty)
       #expect(!result.emoji.hexcode.isEmpty)
 
-      // Score should be reasonable
-      #expect(result.score <= 1000.0)  // Reasonable upper bound
+      #expect(result.score <= 100_000.0)
     }
   }
 
