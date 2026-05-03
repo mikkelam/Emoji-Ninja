@@ -13,6 +13,9 @@ class EmojiPickerViewModel: ObservableObject {
 
   private let emojiManager: EmojiManager
   private var navigationState = EmojiNavigationState()
+  private var isManualScrollMode = false
+  private var lastKeyboardNavigationAt = Date.distantPast
+  private let keyboardScrollGraceInterval: TimeInterval = 0.2
 
   var isInSearchMode: Bool {
     return searchText.count >= 2
@@ -65,6 +68,9 @@ class EmojiPickerViewModel: ObservableObject {
     default: return .ignored
     }
 
+    lastKeyboardNavigationAt = Date()
+    isManualScrollMode = false
+
     let effects = EmojiNavigationReducer.reduce(
       state: &navigationState,
       action: action,
@@ -74,7 +80,7 @@ class EmojiPickerViewModel: ObservableObject {
     )
 
     selectedEmojiIndex = navigationState.selectedEmojiIndex
-    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex)
+    shouldAutoScrollSelection = effects.contains(.scrollToSelectedIndex) && !isManualScrollMode
     return .handled
   }
 
@@ -231,5 +237,19 @@ class EmojiPickerViewModel: ObservableObject {
 
   func consumeAutoScrollSelection() {
     shouldAutoScrollSelection = false
+  }
+
+  func onScrollActivity() {
+    let isLikelyProgrammaticScroll =
+      Date().timeIntervalSince(lastKeyboardNavigationAt) <= keyboardScrollGraceInterval
+    guard !isLikelyProgrammaticScroll else { return }
+    isManualScrollMode = true
+    shouldAutoScrollSelection = false
+  }
+
+  func currentScrollTargetId() -> String? {
+    let allEmojis = getAllEmojis()
+    guard selectedEmojiIndex >= 0 && selectedEmojiIndex < allEmojis.count else { return nil }
+    return "emoji_index_\(selectedEmojiIndex)"
   }
 }
