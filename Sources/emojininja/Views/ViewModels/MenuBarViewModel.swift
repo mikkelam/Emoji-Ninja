@@ -52,11 +52,6 @@ class MenuBarViewModel: ObservableObject {
     set { appState.launchAtLogin = newValue }
   }
 
-  func dismissLaunchAtLoginAlert() {
-    showingLaunchAtLoginAlert = false
-    launchAtLoginError = nil
-  }
-
   // MARK: - Accessibility Permissions
 
   var hasAccessibilityPermission: Bool {
@@ -115,10 +110,6 @@ class MenuBarViewModel: ObservableObject {
   }
 
   // MARK: - Theme Management
-
-  var currentTheme: ThemeType {
-    themeManager.themeType
-  }
 
   func setTheme(_ theme: ThemeType) {
     themeManager.setTheme(theme)

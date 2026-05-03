@@ -170,7 +170,7 @@ class EmojiManager: ObservableObject {
       self.typeEmojiDirectly(emojiWithSkinTone)
     }
 
-    showBriefFeedback(emoji: emojiWithSkinTone)
+    showBriefFeedback()
   }
 
   private func typeEmojiDirectly(_ emoji: String) {
@@ -213,7 +213,7 @@ class EmojiManager: ObservableObject {
     pasteboard.setString(emoji, forType: .string)
   }
 
-  private func showBriefFeedback(emoji: String) {
+  private func showBriefFeedback() {
     // Simple console feedback - could be enhanced with toast notification
   }
 

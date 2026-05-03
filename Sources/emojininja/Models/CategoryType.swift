@@ -25,15 +25,6 @@ enum CategoryType: Hashable {
     }
   }
 
-  var isAvailable: Bool {
-    switch self {
-    case .frequentlyUsed:
-      return FrequentlyUsedEmojiManager.shared.hasFrequentlyUsedEmojis()
-    case .regular(let group):
-      return !AppEmojiManager.shared.getEmojis(for: group).isEmpty
-    }
-  }
-
   func getEmojis() -> [EmojibaseEmoji] {
     switch self {
     case .frequentlyUsed:
