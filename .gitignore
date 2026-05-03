@@ -33,6 +33,7 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+build/
 EmojiNinja.xcodeproj/
 
 # CocoaPods

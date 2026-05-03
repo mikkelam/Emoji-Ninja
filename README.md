@@ -49,6 +49,7 @@ Both methods remove the quarantine flag that triggers the stronger security bloc
 - macOS 14.0+
 - Swift 6.0+
 - [just](https://github.com/casey/just) command runner: `brew install just`
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
 
 **Install to /Applications:**
 ```bash
@@ -57,12 +58,16 @@ just install
 
 ## Development
 
-This project is Xcode-free! All builds use Swift Package Manager via `just` commands.
+This project is CLI-first. The Xcode project is generated from [`project.yml`](project.yml) via XcodeGen.
 
 **Essential commands:**
-- `just dev` - Build debug version and run (shows console output for debugging)
-- `just run` - Build and run debug version
-- `just install` - Build release version and install to /Applications
+- `just gen` - Generate `EmojiNinja.xcodeproj`
+- `just build` - Build app with `xcodebuild`
+- `just test` - Run tests with `xcodebuild`
+- `just archive` - Build release archive
+- `just dist-zip` - Build ZIP from archive
+- `just dist-dmg` - Build DMG from archive
+- `just install` - Install archived app to `/Applications`
 - `just clean` - Clean build artifacts
 - `just -l` - Show all available commands
 

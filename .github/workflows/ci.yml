@@ -20,8 +20,11 @@ jobs:
         with:
           xcode-version: "16"
 
+      - name: Install tools
+        run: brew install just xcodegen
+
       - name: Run tests
-        run: swift test --parallel
+        run: just test
 
   lint-and-format:
     name: Code Quality
@@ -37,8 +40,4 @@ jobs:
         run: brew install swiftlint swift-format
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          swiftlint: true
-          swift_format_official: true
-          auto_fix: ${{ github.ref != 'refs/heads/main' }}
+        run: just lint

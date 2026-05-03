@@ -31,10 +31,13 @@ jobs:
       - name: Install just
         uses: taiki-e/install-action@just
 
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
       - name: Build distribution packages
         run: just dist
 
-      - name: Get version from justfile
+      - name: Get version
         id: version
         run: echo "version=$(just get-version)" >> $GITHUB_OUTPUT
 

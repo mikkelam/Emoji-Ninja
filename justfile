@@ -5,8 +5,10 @@ scheme := "EmojiNinja"
 config := "Debug"
 release_config := "Release"
 archive_path := "build/EmojiNinja.xcarchive"
+derived_data := "build/DerivedData"
 dist_dir := "dist"
 app_name := "Emoji Ninja.app"
+app_bin := f'{{derived_data}}/Build/Products/{{config}}/{{app_name}}/Contents/MacOS/Emoji Ninja'
 
 default:
     @just --list
@@ -16,20 +18,23 @@ gen:
 
 clean:
     rm -rf build dist
-    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ config }} clean || true
+    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ config }} -derivedDataPath {{ derived_data }} clean || true
 
 build: gen
-    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ config }} build
+    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ config }} -derivedDataPath {{ derived_data }} build
 
 test: gen
-    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ config }} test
+    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ config }} -derivedDataPath {{ derived_data }} test
 
-run: build
-    open "$(find ~/Library/Developer/Xcode/DerivedData -type d -name "{{ app_name }}" -path "*/Build/Products/{{ config }}/*" | head -n 1)"
+run-gui: build
+    open "{{ derived_data }}/Build/Products/{{ config }}/{{ app_name }}"
+
+dev: build
+    "{{ app_bin }}"
 
 archive: gen
     rm -rf {{ archive_path }}
-    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ release_config }} archive -archivePath {{ archive_path }}
+    xcodebuild -project {{ project }} -scheme {{ scheme }} -configuration {{ release_config }} -derivedDataPath {{ derived_data }} archive -archivePath {{ archive_path }}
 
 app: archive
     @echo "{{ archive_path }}/Products/Applications/{{ app_name }}"
@@ -45,6 +50,18 @@ dist-dmg: archive
     ln -s /Applications {{ dist_dir }}/dmg/Applications
     hdiutil create -srcfolder {{ dist_dir }}/dmg -format UDZO -volname "EmojiNinja" {{ dist_dir }}/EmojiNinja.dmg
 
+checksums:
+    shasum -a 256 {{ dist_dir }}/*.dmg {{ dist_dir }}/*.zip > {{ dist_dir }}/checksums.txt
+
+dist: dist-zip dist-dmg checksums
+
+get-version:
+    @cat VERSION
+
+lint:
+    swift format lint -r Sources Tests
+    swiftlint
+
 install: archive
     rm -rf "/Applications/{{ app_name }}"
     cp -R "{{ archive_path }}/Products/Applications/{{ app_name }}" /Applications/
@@ -53,3 +70,5 @@ status:
     @echo "project: {{ project }}"
     @test -f project.yml && echo "xcodegen spec: present" || echo "xcodegen spec: missing"
     @test -d {{ project }} && echo "xcodeproj: present" || echo "xcodeproj: missing (run 'just gen')"
+
+alias run := run-gui
