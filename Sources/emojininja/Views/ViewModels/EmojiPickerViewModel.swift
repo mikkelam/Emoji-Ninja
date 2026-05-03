@@ -54,6 +54,7 @@ class EmojiPickerViewModel: ObservableObject {
     guard !allEmojis.isEmpty else { return .ignored }
 
     let columns = EmojiLayout.gridColumns
+    let sectionCounts = getSectionCountsForNavigation()
     let action: EmojiNavigationAction
 
     switch keyPress.key {
@@ -68,7 +69,8 @@ class EmojiPickerViewModel: ObservableObject {
       state: &navigationState,
       action: action,
       totalEmojis: allEmojis.count,
-      columns: columns
+      columns: columns,
+      sectionCounts: sectionCounts
     )
 
     selectedEmojiIndex = navigationState.selectedEmojiIndex
@@ -215,6 +217,16 @@ class EmojiPickerViewModel: ObservableObject {
     } else {
       return currentSearchResults
     }
+  }
+
+  private func getSectionCountsForNavigation() -> [Int] {
+    if isInSearchMode {
+      return [currentSearchResults.count]
+    }
+    if let selectedCategory {
+      return [selectedCategory.getEmojis().count]
+    }
+    return CategoryType.availableCategories.map { $0.getEmojis().count }
   }
 
   func consumeAutoScrollSelection() {
