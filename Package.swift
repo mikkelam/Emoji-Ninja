@@ -42,7 +42,7 @@ let package = Package(
     ),
     .testTarget(
       name: "EmojiNinjaTests",
-      dependencies: ["ninjalib"]
+      dependencies: ["ninjalib", "emoji"]
     )
   ]
 )

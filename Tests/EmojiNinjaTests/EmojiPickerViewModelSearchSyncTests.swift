@@ -1,6 +1,6 @@
 import Testing
 
-@testable import Emoji_Ninja
+@testable import emoji
 
 @MainActor
 struct EmojiPickerViewModelSearchSyncTests {
