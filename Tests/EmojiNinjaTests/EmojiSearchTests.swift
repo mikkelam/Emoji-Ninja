@@ -106,4 +106,20 @@ struct EmojiSearchTests {
     #expect(keycapOneIndex != nil)
     #expect((keycapOneIndex ?? 999) < 3)
   }
+
+  @Test @MainActor func goldenTop3RankingForCriticalQueries() throws {
+    let cases: [(query: String, expectedHexcode: String)] = [
+      ("1", "0031-FE0F-20E3"),
+      ("cowboy", "1F920"),
+      ("thumbs up", "1F44D"),
+      ("heart", "2764"),
+    ]
+
+    for testCase in cases {
+      let results = dataManager.searchEmojisWithSearchKit(query: testCase.query)
+      let index = results.firstIndex { $0.hexcode == testCase.expectedHexcode }
+      #expect(index != nil, "missing expected result for query='\(testCase.query)'")
+      #expect((index ?? 999) < 3, "expected top-3 for query='\(testCase.query)'")
+    }
+  }
 }
