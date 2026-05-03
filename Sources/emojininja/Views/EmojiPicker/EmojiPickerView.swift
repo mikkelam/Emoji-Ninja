@@ -45,6 +45,9 @@ struct EmojiPickerView: View {
           ScrollViewReader { proxy in
             ScrollView {
               LazyVStack(alignment: .leading, spacing: 4) {
+                Color.clear
+                  .frame(height: 1)
+                  .id("emoji_content_top")
                 if !viewModel.isInSearchMode {
                   // Category browsing mode
                   EmojiGridView(
@@ -86,6 +89,7 @@ struct EmojiPickerView: View {
               viewModel.consumeAutoScrollSelection()
             }
             .onChange(of: viewModel.selectedCategory) { _, _ in
+              proxy.scrollTo("emoji_content_top", anchor: .top)
               viewModel.onSelectedCategoryChangedFromUI()
             }
           }
