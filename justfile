@@ -13,7 +13,14 @@ app_bin := f'{{derived_data}}/Build/Products/{{config}}/{{app_name}}/Contents/Ma
 default:
     @just --list
 
-gen:
+build-version:
+    mkdir -p Sources/emojininja/Generated
+    @version="$(git tag --points-at HEAD | head -n 1)"; \
+    if [ -z "$version" ]; then version="$(git rev-parse --short=8 HEAD 2>/dev/null || echo unknown)"; fi; \
+    if ! git diff --no-ext-diff --quiet --ignore-submodules --; then version="$version+dirty"; fi; \
+    printf "enum BuildVersion {\n  static let display = \"%s\"\n}\n" "$version" > Sources/emojininja/Generated/BuildVersion.swift
+
+gen: build-version
     xcodegen generate
 
 clean:
@@ -56,7 +63,10 @@ checksums:
 dist: dist-zip dist-dmg checksums
 
 get-version:
-    @cat VERSION
+    @version="$(git tag --points-at HEAD | head -n 1)"; \
+    if [ -z "$version" ]; then version="$(git rev-parse --short=8 HEAD 2>/dev/null || echo unknown)"; fi; \
+    if ! git diff --no-ext-diff --quiet --ignore-submodules --; then version="$version+dirty"; fi; \
+    echo "$version"
 
 lint:
     swift format lint -r Sources Tests Package.swift

@@ -107,7 +107,7 @@ class MenuBarViewModel: ObservableObject {
       defer: false
     )
 
-    accessibilityDialogWindow?.title = "Emoji Ninja"
+    accessibilityDialogWindow?.title = "Emoji Ninja \(BuildVersion.display)"
     accessibilityDialogWindow?.contentView = NSHostingView(rootView: contentView)
     accessibilityDialogWindow?.level = .floating
     accessibilityDialogWindow?.center()
