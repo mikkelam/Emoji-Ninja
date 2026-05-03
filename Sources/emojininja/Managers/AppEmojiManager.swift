@@ -46,8 +46,7 @@ class AppEmojiManager {
 
   @MainActor
   func searchEmojisWithSearchKit(query: String) -> [EmojibaseEmoji] {
-    let results = dataManager.searchEmojisWithSearchKit(query: query)
-    return results.filter { $0.isSupported }
+    dataManager.searchEmojisWithSearchKit(query: query)
   }
 
   func getAvailableGroups() -> [EmojiGroup] {

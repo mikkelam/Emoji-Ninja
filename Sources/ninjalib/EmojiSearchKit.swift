@@ -319,6 +319,7 @@ public class EmojiSearchKit {
 
 extension EmojiDataManager {
   @MainActor private static var searchKitInstance: EmojiSearchKit?
+  private static let maxSearchResults = 100
 
   /// Get or create the SearchKit instance
   @MainActor
@@ -335,35 +336,99 @@ extension EmojiDataManager {
   /// Enhanced search using SearchKit with fallback to manual substring search
   @MainActor
   public func searchEmojisWithSearchKit(query: String) -> [EmojibaseEmoji] {
-    guard !query.isEmpty else { return [] }
+    let normalizedQuery = query
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+      .lowercased()
+    guard !normalizedQuery.isEmpty else { return [] }
 
-    let searchKitResults = Self.searchKit.search(query: query)
-    var results = searchKitResults.map { $0.emoji }
-
-    // Always supplement with manual substring search to ensure comprehensive results
     let allEmojis = getAllEmojis()
-    let lowercaseQuery = query.lowercased()
+    let exactMatches = allEmojis.filter { emoji in
+      let label = normalizeSearchText(emoji.label)
+      let tags = (emoji.tags ?? []).map(normalizeSearchText)
+      let labelTokens = Set(tokenizeSearchText(label))
+      let tagTokens = Set(tags.flatMap(tokenizeSearchText))
+      let hex = normalizeSearchText(emoji.hexcode)
+      let unicode = normalizeSearchText(emoji.unicode)
 
-    let additionalResults = allEmojis.filter { emoji in
-      // Skip if already found by SearchKit
-      if results.contains(where: { $0.hexcode == emoji.hexcode }) {
-        return false
-      }
-
-      // Check if query matches label or any tag as substring
-      let labelMatch = emoji.label.lowercased().contains(lowercaseQuery)
-      let tagMatch =
-        emoji.tags?.contains { tag in
-          tag.lowercased().contains(lowercaseQuery)
-        } ?? false
-
-      return labelMatch || tagMatch
+      return label == normalizedQuery
+        || tags.contains(normalizedQuery)
+        || labelTokens.contains(normalizedQuery)
+        || tagTokens.contains(normalizedQuery)
+        || hex == normalizedQuery
+        || unicode == normalizedQuery
+        || label.hasPrefix(normalizedQuery)
+        || tags.contains(where: { $0.hasPrefix(normalizedQuery) })
     }
 
-    results.append(contentsOf: additionalResults)
+    let searchKitResults = Self.searchKit.search(query: normalizedQuery)
+    let searchOrder: [String: Int] = Dictionary(
+      uniqueKeysWithValues: searchKitResults.enumerated().map { ($1.emoji.hexcode, $0) })
 
-    // Limit total results for performance (SearchKit results first, then substring matches)
-    return Array(results.prefix(100))
+    var candidatesByHex: [String: EmojibaseEmoji] = [:]
+    for emoji in exactMatches {
+      candidatesByHex[emoji.hexcode] = emoji
+    }
+    for result in searchKitResults {
+      candidatesByHex[result.emoji.hexcode] = result.emoji
+    }
+    for emoji in allEmojis {
+      let label = normalizeSearchText(emoji.label)
+      let tagMatch = (emoji.tags ?? []).contains { normalizeSearchText($0).contains(normalizedQuery) }
+      if label.contains(normalizedQuery) || tagMatch {
+        candidatesByHex[emoji.hexcode] = emoji
+      }
+    }
+
+    let exactByHex: Set<String> = Set(exactMatches.map(\.hexcode))
+    var remaining = candidatesByHex.values.filter { !exactByHex.contains($0.hexcode) }
+
+    let relevance = SearchRelevance.shared
+    remaining.sort { lhs, rhs in
+      let lhsScore = relevance.score(emoji: lhs, query: normalizedQuery)
+      let rhsScore = relevance.score(emoji: rhs, query: normalizedQuery)
+      if lhsScore != rhsScore { return lhsScore > rhsScore }
+
+      let lhsOrder = searchOrder[lhs.hexcode] ?? Int.max
+      let rhsOrder = searchOrder[rhs.hexcode] ?? Int.max
+      if lhsOrder != rhsOrder { return lhsOrder < rhsOrder }
+
+      return lhs.hexcode < rhs.hexcode
+    }
+
+    let exactOrdered = exactMatches.sorted { lhs, rhs in
+      let lhsOrder = searchOrder[lhs.hexcode] ?? Int.max
+      let rhsOrder = searchOrder[rhs.hexcode] ?? Int.max
+      if lhsOrder != rhsOrder { return lhsOrder < rhsOrder }
+      return lhs.hexcode < rhs.hexcode
+    }
+
+    var merged: [EmojibaseEmoji] = []
+    merged.reserveCapacity(min(Self.maxSearchResults, exactOrdered.count + remaining.count))
+
+    for emoji in exactOrdered {
+      if merged.count >= Self.maxSearchResults { break }
+      merged.append(emoji)
+    }
+    for emoji in remaining {
+      if merged.count >= Self.maxSearchResults { break }
+      if exactByHex.contains(emoji.hexcode) { continue }
+      merged.append(emoji)
+    }
+
+    return merged
   }
 
+}
+
+private func normalizeSearchText(_ text: String) -> String {
+  text
+    .trimmingCharacters(in: .whitespacesAndNewlines)
+    .lowercased()
+}
+
+private func tokenizeSearchText(_ text: String) -> [String] {
+  text
+    .split { !$0.isLetter && !$0.isNumber }
+    .map(String.init)
+    .filter { !$0.isEmpty }
 }

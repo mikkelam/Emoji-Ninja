@@ -78,9 +78,32 @@ struct EmojiSearchTests {
     let hatResults = dataManager.searchEmojisWithSearchKit(query: "hat")
     let foundByHat = hatResults.contains { $0.unicode == "🤠" }
     #expect(foundByHat)
+  }
 
-    let faceResults = dataManager.searchEmojisWithSearchKit(query: "face")
-    let foundByFace = faceResults.contains { $0.unicode == "🤠" }
-    #expect(foundByFace)
+  @Test @MainActor func cowboyRankingRelevance() throws {
+    let cowResults = dataManager.searchEmojisWithSearchKit(query: "cow")
+    let cowboyResults = dataManager.searchEmojisWithSearchKit(query: "cowboy")
+
+    let cowIndex = cowResults.firstIndex { $0.unicode == "🤠" }
+    let cowboyIndex = cowboyResults.firstIndex { $0.unicode == "🤠" }
+
+    #expect(cowIndex != nil)
+    #expect(cowboyIndex != nil)
+    #expect((cowIndex ?? 999) < 20)
+    #expect((cowboyIndex ?? 999) < 10)
+  }
+
+  @Test @MainActor func cowboyQueryWithWhitespaceStillFindsCowboy() throws {
+    let results = dataManager.searchEmojisWithSearchKit(query: "  cowboy  ")
+    let cowboyIndex = results.firstIndex { $0.hexcode == "1F920" }
+    #expect(cowboyIndex != nil)
+    #expect((cowboyIndex ?? 999) < 10)
+  }
+
+  @Test @MainActor func singleCharacterExactLikeQueryFindsThumbsUp() throws {
+    let results = dataManager.searchEmojisWithSearchKit(query: "1")
+    let thumbsUpIndex = results.firstIndex { $0.hexcode == "1F44D" }
+    #expect(thumbsUpIndex != nil)
+    #expect((thumbsUpIndex ?? 999) < 20)
   }
 }

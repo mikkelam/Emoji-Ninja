@@ -19,6 +19,7 @@ struct EmojiDataSnapshot {
 
 @MainActor
 struct EmojiDataSource {
+  private static let maxSearchResults = 60
   private let repository: EmojiRepository
 
   init(repository: EmojiRepository) {
@@ -26,8 +27,8 @@ struct EmojiDataSource {
   }
 
   func makeSnapshot(searchText: String, selectedCategory: CategoryType?) -> EmojiDataSnapshot {
-    if searchText.count >= 2 {
-      let results = repository.search(query: searchText)
+    if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+      let results = Array(repository.search(query: searchText).prefix(Self.maxSearchResults))
       return EmojiDataSnapshot(
         sections: [],
         flatEmojis: results,
