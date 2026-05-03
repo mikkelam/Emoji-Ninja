@@ -73,4 +73,49 @@ struct EmojiNavigationReducerTests {
     #expect(state.selectedEmojiIndex == 0)
     #expect(effects.isEmpty)
   }
+
+  @Test func moveDownAcrossSectionKeepsColumnWhenAvailable() {
+    var state = EmojiNavigationState(selectedEmojiIndex: 2)
+
+    let effects = EmojiNavigationReducer.reduce(
+      state: &state,
+      action: .moveDown,
+      totalEmojis: 14,
+      columns: 6,
+      sectionCounts: [8, 6]
+    )
+
+    #expect(state.selectedEmojiIndex == 10)
+    #expect(effects == [.scrollToSelectedIndex])
+  }
+
+  @Test func moveDownAcrossSectionClampsWhenColumnMissing() {
+    var state = EmojiNavigationState(selectedEmojiIndex: 5)
+
+    let effects = EmojiNavigationReducer.reduce(
+      state: &state,
+      action: .moveDown,
+      totalEmojis: 11,
+      columns: 6,
+      sectionCounts: [8, 3]
+    )
+
+    #expect(state.selectedEmojiIndex == 10)
+    #expect(effects == [.scrollToSelectedIndex])
+  }
+
+  @Test func moveUpAcrossSectionKeepsColumnWhenAvailable() {
+    var state = EmojiNavigationState(selectedEmojiIndex: 10)
+
+    let effects = EmojiNavigationReducer.reduce(
+      state: &state,
+      action: .moveUp,
+      totalEmojis: 14,
+      columns: 6,
+      sectionCounts: [8, 6]
+    )
+
+    #expect(state.selectedEmojiIndex == 2)
+    #expect(effects == [.scrollToSelectedIndex])
+  }
 }
