@@ -28,11 +28,8 @@ jobs:
         with:
           xcode-version: "16"
 
-      - name: Install just
-        uses: taiki-e/install-action@just
-
-      - name: Install XcodeGen
-        run: brew install xcodegen
+      - name: Setup mise tools
+        uses: jdx/mise-action@v2
 
       - name: Build distribution packages
         run: just dist

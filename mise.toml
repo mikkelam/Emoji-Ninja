@@ -1,4 +1,4 @@
 [tools]
 just = "latest"
 xcodegen = "latest"
-
+swiftlint = "latest"
