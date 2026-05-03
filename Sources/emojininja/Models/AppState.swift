@@ -14,7 +14,6 @@ class AppState: ObservableObject {
   @Published var launchAtLoginError: String?
   @Published var showingLaunchAtLoginAlert = false
   @Published var hasAccessibilityPermission = false
-  @Published var showingAccessibilityAlert = false
 
   private nonisolated(unsafe) var permissionCheckTimer: Timer?
 
@@ -22,22 +21,11 @@ class AppState: ObservableObject {
   private let hasSeenAccessibilityDialogKey = "hasSeenAccessibilityDialog"
 
   init() {
-    // Initialize launch at login state
-    // checkLaunchAtLoginStatus()
-
     // Check accessibility permissions on startup
     _ = checkAccessibilityPermissions()
 
     // Start periodic permission checking
     startPeriodicPermissionChecking()
-  }
-
-  private func checkLaunchAtLoginStatus() {
-    // Check current launch at login status using SMAppService
-    Task {
-      let status = SMAppService.mainApp.status
-      launchAtLogin = (status == .enabled)
-    }
   }
 
   private func updateLaunchAtLogin() {

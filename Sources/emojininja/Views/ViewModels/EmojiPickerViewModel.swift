@@ -92,12 +92,6 @@ class EmojiPickerViewModel: ObservableObject {
     return true
   }
 
-  func selectCurrentEmoji() -> String? {
-    let allEmojis = dataSnapshot.flatEmojis
-    guard selectedEmojiIndex < allEmojis.count else { return nil }
-    return allEmojis[selectedEmojiIndex].unicode
-  }
-
   func selectCurrentEmojiData() -> EmojibaseEmoji? {
     let allEmojis = dataSnapshot.flatEmojis
     guard selectedEmojiIndex < allEmojis.count else { return nil }

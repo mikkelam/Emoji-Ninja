@@ -24,12 +24,6 @@ class FrequentlyUsedEmojiManager: ObservableObject {
     updateFrequentlyUsedEmojis()
   }
 
-  func clearUsageData() {
-    emojiUsageCount.removeAll()
-    frequentlyUsedEmojis.removeAll()
-    userDefaults.removeObject(forKey: usageCountKey)
-  }
-
   func getFrequentlyUsedEmojis() -> [EmojibaseEmoji] {
     return frequentlyUsedEmojis
   }
