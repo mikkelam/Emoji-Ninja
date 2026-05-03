@@ -7,7 +7,6 @@ struct EmojiPickerView: View {
   @ObservedObject var emojiManager: EmojiManager
   @StateObject private var viewModel: EmojiPickerViewModel
   @StateObject private var tooltipManager = TooltipManager()
-  @State private var isScrolling = false
   @Environment(\.theme) private var theme
 
   init(
@@ -73,16 +72,10 @@ struct EmojiPickerView: View {
               .padding(.horizontal, theme.spacing.medium)
               .padding(.vertical, theme.spacing.xs)
             }
-            .trackEmojiScrolling(isScrolling: $isScrolling)
-            .onChange(of: isScrolling) { _, newValue in
-              if newValue {
-                viewModel.onScrollActivity()
-              }
-            }
             .onChange(of: viewModel.selectedEmojiIndex) { _, _ in
               guard viewModel.shouldAutoScrollSelection else { return }
               if let targetId = viewModel.currentScrollTargetId() {
-                withAnimation(.easeInOut(duration: 0.2)) {
+                DispatchQueue.main.async {
                   proxy.scrollTo(targetId, anchor: .center)
                 }
               }

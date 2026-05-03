@@ -63,7 +63,7 @@ struct EmojiDataSource {
     if repository.hasFrequentlyUsedEmojis() {
       categories.append(.frequentlyUsed)
     }
-    categories.append(contentsOf: EmojiGroup.availableGroups.map { .regular($0) })
+    categories.append(contentsOf: repository.availableGroups().map { .regular($0) })
     return categories
   }
 
