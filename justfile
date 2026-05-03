@@ -59,8 +59,11 @@ get-version:
     @cat VERSION
 
 lint:
-    swift format lint -r Sources Tests
+    swift format lint -r Sources Tests Package.swift
     swiftlint
+
+format:
+    swift format -i -r Sources Tests Package.swift
 
 install: archive
     rm -rf "/Applications/{{ app_name }}"
