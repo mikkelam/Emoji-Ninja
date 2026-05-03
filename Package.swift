@@ -26,7 +26,7 @@ let package = Package(
       path: "Sources/ninjalib",
       resources: [
         .process("emoji_data.json"),
-        .process("search_stats.json")
+        .process("search_index.json")
       ]
     ),
     .executableTarget(

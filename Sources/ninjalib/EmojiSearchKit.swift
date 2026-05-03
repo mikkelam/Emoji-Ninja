@@ -1,423 +1,193 @@
-@preconcurrency import CoreServices
 import Foundation
 
-/// A high-performance search engine for emoji data using Apple's SearchKit
 @MainActor
 public class EmojiSearchKit {
-  private var searchIndex: SKIndex?
-  private let indexURL: URL
-  private var documentURLs: [String: URL] = [:]
-  private var emojiMap: [URL: EmojibaseEmoji] = [:]
+  private let entries: [SearchEntry]
+  private let artifactBytes: Int64
 
-  // Search options - enable fuzzy matching
-  private let searchOptions = SKSearchOptions(
-    kSKSearchOptionDefault
-      | kSKSearchOptionFindSimilar
-      | kSKSearchOptionSpaceMeansOR
-  )
+  public init(emojis: [EmojibaseEmoji]) {
+    let artifact = SearchIndexArtifact.load()
+    let allowed = Set(emojis.map(\.hexcode))
+    let emojiByHex = Dictionary(uniqueKeysWithValues: emojis.map { ($0.hexcode, $0) })
 
-  public init() {
-    // Create index in memory (you can also persist to disk)
-    let tempDir = FileManager.default.temporaryDirectory
-    self.indexURL = tempDir.appendingPathComponent("emoji_search_index_\(UUID().uuidString)")
+    var builtEntries: [SearchEntry] = []
+    builtEntries.reserveCapacity(artifact.entries.count)
 
-    createIndex()
-  }
-
-  deinit {
-    // Clean up temp file if it exists
-    try? FileManager.default.removeItem(at: indexURL)
-  }
-
-  // MARK: - Index Management
-
-  private func createIndex() {
-    // Create search index with custom properties for better emoji searching
-    let properties =
-      [
-        kSKProximityIndexing: true,  // Enable proximity searching
-        kSKMinTermLength: 1,  // Allow single character searches
-        kSKMaximumTerms: 2000  // Plenty of terms for tags
-      ] as CFDictionary
-
-    // Create the index
-    if let index = SKIndexCreateWithURL(
-      indexURL as CFURL,
-      nil,  // No index name needed for file-based
-      SKIndexType(kSKIndexInverted.rawValue),
-      properties
-    ) {
-      self.searchIndex = index.takeRetainedValue()
-    } else {
-      print("❌ Failed to create SearchKit index")
-    }
-  }
-
-  // MARK: - Indexing
-
-  func indexEmojis(_ emojis: [EmojibaseEmoji]) {
-    guard let index = searchIndex else { return }
-
-    for emoji in emojis {
-      // Create a unique URL for this emoji
-      let documentURL = URL(string: "emoji://\(emoji.hexcode)")!
-
-      // Build searchable text from all emoji properties
-      var searchableText = [emoji.label]
-
-      if let tags = emoji.tags {
-        searchableText.append(contentsOf: tags)
-      }
-
-      if let emoticons = emoji.emoticon?.values {
-        searchableText.append(contentsOf: emoticons)
-      }
-
-      // Add hexcode for technical searches
-      searchableText.append(emoji.hexcode)
-
-      // Join all searchable content
-      let fullText = searchableText.joined(separator: " ")
-
-      // Create document
-      if let document = SKDocumentCreateWithURL(documentURL as CFURL) {
-        // Index the document
-        let added = SKIndexAddDocumentWithText(
-          index,
-          document.takeRetainedValue(),
-          fullText as CFString,
-          true  // Can replace existing
-        )
-
-        if added {
-          // Store mappings for retrieval
-          documentURLs[emoji.hexcode] = documentURL
-          emojiMap[documentURL] = emoji
-        }
-      }
+    for entry in artifact.entries where allowed.contains(entry.hexcode) {
+      guard let emoji = emojiByHex[entry.hexcode] else { continue }
+      builtEntries.append(SearchEntry(artifact: entry, emoji: emoji))
     }
 
-    // Flush the index to ensure all documents are searchable
-    SKIndexFlush(index)
+    entries = builtEntries
+    artifactBytes = artifact.byteSizeEstimate
   }
-
-  // MARK: - Searching
 
   public struct SearchResult {
     public let emoji: EmojibaseEmoji
     public let score: Float
-    public let matchedTerms: [String]
   }
 
   public func search(query: String, limit: Int = 50) -> [SearchResult] {
-    guard let index = searchIndex,
-      !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    else {
-      return []
-    }
+    let normalized = normalizeSearchText(query)
+    guard !normalized.isEmpty else { return [] }
 
-    // First try exact search
-    var results = performSearch(query: query, index: index, limit: limit)
+    let queryTokens = tokenizeSearchText(normalized)
+    var scored: [(entry: SearchEntry, score: Int)] = []
 
-    // For better substring matching, always try wildcard searches
-    if query.count >= 2 {
-      // Try prefix matching
-      let prefixQuery = "\(query)*"
-      let prefixResults = performSearch(query: prefixQuery, index: index, limit: limit)
-      results = mergeResults(results, prefixResults)
+    scored.reserveCapacity(entries.count / 3)
 
-      // Try substring matching with wildcards around the query
-      let substringQuery = "*\(query)*"
-      let substringResults = performSearch(query: substringQuery, index: index, limit: limit)
-      results = mergeResults(results, substringResults)
-
-      // If still limited results, try each word with wildcards
-      if results.count < limit / 2 {
-        let words = query.split(separator: " ").map(String.init)
-        let wildcardQuery = words.map { "*\($0)*" }.joined(separator: " ")
-        let wildcardResults = performSearch(
-          query: wildcardQuery, index: index, limit: limit)
-        results = mergeResults(results, wildcardResults)
+    for entry in entries {
+      let score = score(entry: entry, query: normalized, queryTokens: queryTokens)
+      if score > 0 {
+        scored.append((entry, score))
       }
     }
 
-    return results
+    scored.sort { lhs, rhs in
+      if lhs.score != rhs.score { return lhs.score > rhs.score }
+      if lhs.entry.order != rhs.entry.order { return lhs.entry.order < rhs.entry.order }
+      return lhs.entry.hexcode < rhs.entry.hexcode
+    }
+
+    return scored.prefix(limit).map {
+      SearchResult(emoji: $0.entry.emoji, score: Float($0.score))
+    }
   }
 
-  private func performSearch(query: String, index: SKIndex, limit: Int) -> [SearchResult] {
-    // Create search
-    guard
-      let searchRef = SKSearchCreate(
-        index,
-        query as CFString,
-        searchOptions
-      )
-    else {
-      return []
-    }
-
-    let search = searchRef.takeRetainedValue()
-
-    var results: [SearchResult] = []
-    let maxResults = limit
-    var documentIDs = [SKDocumentID](repeating: 0, count: maxResults)
-    var scores = [Float](repeating: 0, count: maxResults)
-    var foundCount = 0
-
-    // Perform search
-    _ = SKSearchFindMatches(
-      search,
-      maxResults,
-      &documentIDs,
-      &scores,
-      CFTimeInterval(0.1),  // 100ms timeout
-      &foundCount
-    )
-
-    // Process results
-    for resultIndex in 0..<foundCount {
-      let docID = documentIDs[resultIndex]
-
-      // Get document URL
-      if let documentRef = SKIndexCopyDocumentForDocumentID(index, docID) {
-        let document = documentRef.takeRetainedValue()
-        if let url = SKDocumentCopyURL(document) {
-          let documentURL = url.takeRetainedValue() as URL
-
-          if let emoji = emojiMap[documentURL] {
-            // Extract matched terms (this is a simplified version)
-            let matchedTerms = extractMatchedTerms(query: query, emoji: emoji)
-
-            results.append(
-              SearchResult(
-                emoji: emoji,
-                  score: scores[resultIndex],
-                matchedTerms: matchedTerms
-              ))
-          }
-        }
-      }
-    }
-
-    // Sort by score (highest first)
-    results.sort { $0.score > $1.score }
-
-    return results
-  }
-
-  // MARK: - Helper Methods
-
-  private func mergeResults(_ existing: [SearchResult], _ new: [SearchResult]) -> [SearchResult] {
-    var merged = existing
-    let existingHexcodes = Set(existing.map { $0.emoji.hexcode })
-
-    for result in new where !existingHexcodes.contains(result.emoji.hexcode) {
-      merged.append(result)
-    }
-
-    return merged
-  }
-
-  private func extractMatchedTerms(query: String, emoji: EmojibaseEmoji) -> [String] {
-    let queryTerms = query.lowercased().split(separator: " ").map(String.init)
-    var matched: Set<String> = []
-
-    // Check label
-    let labelLower = emoji.label.lowercased()
-    for term in queryTerms where labelLower.contains(term) {
-      matched.insert(emoji.label)
-    }
-
-    // Check tags
-    if let tags = emoji.tags {
-      for tag in tags {
-        let tagLower = tag.lowercased()
-        for term in queryTerms where tagLower.contains(term) {
-          matched.insert(tag)
-        }
-      }
-    }
-
-    return Array(matched)
-  }
-
-  // MARK: - Advanced Search Features
-
-  /// Search with additional options
-  func advancedSearch(
+  private func score(
+    entry: SearchEntry,
     query: String,
-    categories: [EmojiGroup]? = nil,
-    excludeTerms: [String]? = nil,
-    limit: Int = 50
-  ) -> [SearchResult] {
-    var searchQuery = query
+    queryTokens: [String]
+  ) -> Int {
+    var score = 0
+    let isSingleCharacter = query.count == 1
 
-    // Add exclusions using SearchKit syntax
-    if let excludeTerms = excludeTerms, !excludeTerms.isEmpty {
-      let exclusions = excludeTerms.map { "NOT \($0)" }.joined(separator: " ")
-      searchQuery += " \(exclusions)"
+    if entry.unicode == query {
+      score += 30_000
+    }
+    if entry.hexcode == query {
+      score += 28_000
+    }
+    if entry.aliases.contains(query) {
+      score += 26_000
+    }
+    if entry.label == query {
+      score += 20_000
+    }
+    if entry.tags.contains(query) {
+      score += 18_000
+    }
+    if entry.tokens.contains(query) {
+      score += 16_000
     }
 
-    var results = search(query: searchQuery, limit: limit * 2)  // Get more results for filtering
+    if isSingleCharacter {
+      return score
+    }
 
-    // Filter by categories if specified
-    if let categories = categories, !categories.isEmpty {
-      let allowedGroups = Set(
-        categories.compactMap { category -> Int? in
-          return category.rawValue
-        })
+    if entry.label.hasPrefix(query) {
+      score += 10_000
+    }
+    if entry.tags.contains(where: { $0.hasPrefix(query) }) {
+      score += 9_000
+    }
+    if entry.label.contains(query) {
+      score += 4_500
+    }
+    if entry.tags.contains(where: { $0.contains(query) }) {
+      score += 4_000
+    }
 
-      results = results.filter { result in
-        if let group = result.emoji.group {
-          return allowedGroups.contains(group)
-        }
-        return false
+    for token in queryTokens {
+      if entry.tokens.contains(token) {
+        score += 1_500
       }
     }
 
-    // Limit final results
-    return Array(results.prefix(limit))
+    return score
   }
-
-  /// Get similar emojis based on an example
-  func findSimilar(to emoji: EmojibaseEmoji, limit: Int = 20) -> [SearchResult] {
-    // Use emoji's label and first few tags as the search query
-    var searchTerms = [emoji.label]
-    if let tags = emoji.tags {
-      searchTerms.append(contentsOf: tags.prefix(3))
-    }
-
-    let query = searchTerms.joined(separator: " OR ")
-    var results = search(query: query, limit: limit + 1)
-
-    // Remove the original emoji from results
-    results.removeAll { $0.emoji.hexcode == emoji.hexcode }
-
-    return results
-  }
-
-  // MARK: - Index Statistics
 
   var indexedDocumentCount: Int {
-    guard let index = searchIndex else { return 0 }
-    return SKIndexGetDocumentCount(index)
+    entries.count
   }
 
   var indexSize: Int64 {
-    guard FileManager.default.fileExists(atPath: indexURL.path) else { return 0 }
-
-    do {
-      let attributes = try FileManager.default.attributesOfItem(atPath: indexURL.path)
-      return attributes[.size] as? Int64 ?? 0
-    } catch {
-      return 0
-    }
+    artifactBytes
   }
 }
 
-// MARK: - Integration with EmojiDataManager
+private struct SearchEntry {
+  let emoji: EmojibaseEmoji
+  let hexcode: String
+  let label: String
+  let unicode: String
+  let tags: [String]
+  let tokens: Set<String>
+  let aliases: Set<String>
+  let order: Int
+
+  init(artifact: SearchIndexArtifact.Entry, emoji: EmojibaseEmoji) {
+    self.emoji = emoji
+    hexcode = artifact.hexcode
+    label = artifact.label
+    unicode = artifact.unicode
+    tags = artifact.tags
+    tokens = Set(artifact.tokens)
+    aliases = Set(artifact.aliases)
+    order = artifact.order ?? Int.max
+  }
+}
+
+private struct SearchIndexArtifact: Codable {
+  struct Entry: Codable {
+    let hexcode: String
+    let label: String
+    let unicode: String
+    let group: Int?
+    let order: Int?
+    let tags: [String]
+    let emoticons: [String]
+    let tokens: [String]
+    let aliases: [String]
+  }
+
+  let version: Int
+  let generatedAt: String
+  let emojiCount: Int
+  let entries: [Entry]
+
+  static func load() -> SearchIndexArtifact {
+    guard
+      let url = Bundle.module.url(forResource: "search_index", withExtension: "json"),
+      let data = try? Data(contentsOf: url),
+      let artifact = try? JSONDecoder().decode(SearchIndexArtifact.self, from: data)
+    else {
+      return SearchIndexArtifact(version: 1, generatedAt: "", emojiCount: 0, entries: [])
+    }
+    return artifact
+  }
+
+  var byteSizeEstimate: Int64 {
+    Int64(entries.count * 120)
+  }
+}
 
 extension EmojiDataManager {
   @MainActor private static var searchKitInstance: EmojiSearchKit?
   private static let maxSearchResults = 100
 
-  /// Get or create the SearchKit instance
   @MainActor
   static var searchKit: EmojiSearchKit {
     if searchKitInstance == nil {
-      let kit = EmojiSearchKit()
-      // Index all supported emojis
-      kit.indexEmojis(shared.getSupportedEmojis())
-      searchKitInstance = kit
+      searchKitInstance = EmojiSearchKit(emojis: shared.getSupportedEmojis())
     }
     return searchKitInstance!
   }
 
-  /// Enhanced search using SearchKit with fallback to manual substring search
   @MainActor
   public func searchEmojisWithSearchKit(query: String) -> [EmojibaseEmoji] {
-    let normalizedQuery = query
-      .trimmingCharacters(in: .whitespacesAndNewlines)
-      .lowercased()
-    guard !normalizedQuery.isEmpty else { return [] }
-
-    let allEmojis = getAllEmojis()
-    let exactMatches = allEmojis.filter { emoji in
-      let label = normalizeSearchText(emoji.label)
-      let tags = (emoji.tags ?? []).map(normalizeSearchText)
-      let labelTokens = Set(tokenizeSearchText(label))
-      let tagTokens = Set(tags.flatMap(tokenizeSearchText))
-      let hex = normalizeSearchText(emoji.hexcode)
-      let unicode = normalizeSearchText(emoji.unicode)
-
-      return label == normalizedQuery
-        || tags.contains(normalizedQuery)
-        || labelTokens.contains(normalizedQuery)
-        || tagTokens.contains(normalizedQuery)
-        || hex == normalizedQuery
-        || unicode == normalizedQuery
-        || label.hasPrefix(normalizedQuery)
-        || tags.contains(where: { $0.hasPrefix(normalizedQuery) })
-    }
-
-    let searchKitResults = Self.searchKit.search(query: normalizedQuery)
-    let searchOrder: [String: Int] = Dictionary(
-      uniqueKeysWithValues: searchKitResults.enumerated().map { ($1.emoji.hexcode, $0) })
-
-    var candidatesByHex: [String: EmojibaseEmoji] = [:]
-    for emoji in exactMatches {
-      candidatesByHex[emoji.hexcode] = emoji
-    }
-    for result in searchKitResults {
-      candidatesByHex[result.emoji.hexcode] = result.emoji
-    }
-    for emoji in allEmojis {
-      let label = normalizeSearchText(emoji.label)
-      let tagMatch = (emoji.tags ?? []).contains { normalizeSearchText($0).contains(normalizedQuery) }
-      if label.contains(normalizedQuery) || tagMatch {
-        candidatesByHex[emoji.hexcode] = emoji
-      }
-    }
-
-    let exactByHex: Set<String> = Set(exactMatches.map(\.hexcode))
-    var remaining = candidatesByHex.values.filter { !exactByHex.contains($0.hexcode) }
-
-    let relevance = SearchRelevance.shared
-    remaining.sort { lhs, rhs in
-      let lhsScore = relevance.score(emoji: lhs, query: normalizedQuery)
-      let rhsScore = relevance.score(emoji: rhs, query: normalizedQuery)
-      if lhsScore != rhsScore { return lhsScore > rhsScore }
-
-      let lhsOrder = searchOrder[lhs.hexcode] ?? Int.max
-      let rhsOrder = searchOrder[rhs.hexcode] ?? Int.max
-      if lhsOrder != rhsOrder { return lhsOrder < rhsOrder }
-
-      return lhs.hexcode < rhs.hexcode
-    }
-
-    let exactOrdered = exactMatches.sorted { lhs, rhs in
-      let lhsOrder = searchOrder[lhs.hexcode] ?? Int.max
-      let rhsOrder = searchOrder[rhs.hexcode] ?? Int.max
-      if lhsOrder != rhsOrder { return lhsOrder < rhsOrder }
-      return lhs.hexcode < rhs.hexcode
-    }
-
-    var merged: [EmojibaseEmoji] = []
-    merged.reserveCapacity(min(Self.maxSearchResults, exactOrdered.count + remaining.count))
-
-    for emoji in exactOrdered {
-      if merged.count >= Self.maxSearchResults { break }
-      merged.append(emoji)
-    }
-    for emoji in remaining {
-      if merged.count >= Self.maxSearchResults { break }
-      if exactByHex.contains(emoji.hexcode) { continue }
-      merged.append(emoji)
-    }
-
-    return merged
+    Array(Self.searchKit.search(query: query, limit: Self.maxSearchResults).map(\.emoji))
   }
-
 }
 
 private func normalizeSearchText(_ text: String) -> String {

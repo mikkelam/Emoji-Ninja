@@ -20,10 +20,10 @@ build-version:
     if ! git diff --no-ext-diff --quiet --ignore-submodules --; then version="$version+dirty"; fi; \
     printf "enum BuildVersion {\n  static let display = \"%s\"\n}\n" "$version" > Sources/emojininja/Generated/BuildVersion.swift
 
-build-search-stats:
-    swift scripts/generate_search_stats.swift Sources/ninjalib/emoji_data.json Sources/ninjalib/search_stats.json
+build-search-index:
+    swift scripts/generate_search_index.swift Sources/ninjalib/emoji_data.json Sources/ninjalib/search_index.json
 
-gen: build-version build-search-stats
+gen: build-version build-search-index
     xcodegen generate
 
 clean:
