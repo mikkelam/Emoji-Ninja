@@ -22,22 +22,11 @@ struct EmojiGridView: View {
 
   private var emojiData:
     [(category: CategoryType, emojiIndices: [(emoji: EmojibaseEmoji, globalIndex: Int)])] {
-    let allCategories = CategoryType.availableCategories
-    let categories =
-      viewModel.selectedCategory != nil ? [viewModel.selectedCategory!] : allCategories
-
-    var globalIndex = 0
-    return categories.compactMap { category in
-      let emojis = category.getEmojis()
-      guard !emojis.isEmpty else { return nil }
-
-      let emojiIndices = emojis.map { emoji in
-        let result = (emoji: emoji, globalIndex: globalIndex)
-        globalIndex += 1
-        return result
+    viewModel.currentSections.map { section in
+      let emojiIndices = Array(section.emojis.enumerated()).map { localIndex, emoji in
+        (emoji: emoji, globalIndex: section.startIndex + localIndex)
       }
-
-      return (category: category, emojiIndices: emojiIndices)
+      return (category: section.category, emojiIndices: emojiIndices)
     }
   }
 
