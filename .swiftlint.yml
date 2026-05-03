@@ -3,6 +3,9 @@ included:
   - Tests
   - Package.swift
 
+disabled_rules:
+  - identifier_name
+
 excluded:
   - .build
   - build
